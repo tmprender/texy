@@ -28,6 +28,8 @@ open Ast
 %left LT GT LEQ GEQ
 %left PLUS MINUS
 %left TIMES DIVIDE
+%left CONCAT
+%right CONBIN
 %right NOT NEG
 
 
