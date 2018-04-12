@@ -17,7 +17,7 @@ type expr =
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
-  | Assign of string * expr
+  | Assign of expr * expr
   | Call of string * expr list
   | ArrayLit of expr array
   | StructVar of expr * string
