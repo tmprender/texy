@@ -65,10 +65,12 @@ let string_of_op = function
   | Geq -> ">="
   | And -> "&&"
   | Or -> "||"
+  | Concat -> "+^"
 
 let string_of_uop = function
     Neg -> "-"
   | Not -> "!"
+  | Conbin -> "#"
 
 let rec string_of_expr = function
     Literal(l) -> string_of_int l
@@ -124,7 +126,7 @@ let string_of_fdecl fdecl =
   String.concat "" (List.map string_of_stmt fdecl.body) ^
   "}\n"
 
-let string_of_program (vars, funcs) =
+let string_of_program program =
   String.concat "" (List.map string_of_sdecl program.struct_decls) ^ "\n"  ^
   String.concat "\n" (List.map string_of_vdecl program.var_decls) ^ "\n" ^
   String.concat "\n" (List.map string_of_fdecl program.func_decls)
