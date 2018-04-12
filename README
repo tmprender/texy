@@ -1,4 +1,4 @@
-The MicroC compiler
+The MicroC compiler --> TO BE TEXY!
 
 Coded in OCaml, this takes a highly stripped-down subset of C (ints, floats,
 bools, and void types, arithmetic, if-else, for, and while statements,
