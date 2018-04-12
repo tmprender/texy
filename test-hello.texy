@@ -1,6 +1,5 @@
 int main()
 {
-  float f;
-  f = 2.1;
+  print("Hello World!!");
   return 0;
 }

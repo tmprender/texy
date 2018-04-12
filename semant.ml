@@ -43,8 +43,8 @@ let check (globals, functions) =
       formals = [(ty, "x")];
       locals = []; body = [] } map
     in List.fold_left add_bind StringMap.empty [ ("print", Int);
-			                         ("printb", Bool);
-			                         ("printf", Float);
+                               ("printb", Bool);
+                               ("printword", Word);
 			                         ("printbig", Int) ]
   in
 
@@ -97,8 +97,8 @@ let check (globals, functions) =
 
     (* Return a semantically-checked expression, i.e., with a type *)
     let rec expr = function
-        Literal  l -> (Int, SLiteral l)
-      | Fliteral l -> (Float, SFliteral l)
+        Literal l -> (Int, SLiteral l)
+      | WordLit l -> (Word, SWordLit l)
       | BoolLit l  -> (Bool, SBoolLit l)
       | Noexpr     -> (Void, SNoexpr)
       | Id s       -> (type_of_identifier s, SId s)
@@ -111,7 +111,7 @@ let check (globals, functions) =
       | Unop(op, e) as ex -> 
           let (t, e') = expr e in
           let ty = match op with
-            Neg when t = Int || t = Float -> t
+            Neg when t = Int -> t
           | Not when t = Bool -> Bool
           | _ -> raise (Failure ("illegal unary operator " ^ 
                                  string_of_uop op ^ string_of_typ t ^
@@ -125,10 +125,9 @@ let check (globals, functions) =
           (* Determine expression type based on operator and operand types *)
           let ty = match op with
             Add | Sub | Mult | Div when same && t1 = Int   -> Int
-          | Add | Sub | Mult | Div when same && t1 = Float -> Float
           | Equal | Neq            when same               -> Bool
           | Less | Leq | Greater | Geq
-                     when same && (t1 = Int || t1 = Float) -> Bool
+                     when same && (t1 = Int) -> Bool
           | And | Or when same && t1 = Bool -> Bool
           | _ -> raise (
 	      Failure ("illegal binary operator " ^
@@ -149,6 +148,18 @@ let check (globals, functions) =
           in 
           let args' = List.map2 check_call fd.formals args
           in (fd.typ, SCall(fname, args'))
+      | ArrayLit l ->
+          let ty_arr = List.map expr l in
+          let chk_arr_elem chked elem = 
+        (* check if the elements in an array literal are of the same type *)
+          let ty_err = "Array elements must be the same type" in
+            match elem with 
+              (arrt1, _) -> match chked with 
+                  ((arrt2, _) :: _) when arrt1 != arrt2 -> raise (Failure ty_err)
+                | _ -> elem :: chked
+            in let _ = List.fold_left chk_arr_elem [] (List.sort compare ty_arr) in
+          let (aty,_) = List.hd ty_arr in
+          (Array(aty), SArrayLit(ty_arr))
     in
 
     let check_bool_expr e = 

@@ -1,15 +1,16 @@
-/* Ocamlyacc parser for MicroC */
+/* Ocamlyacc parser for TeXy based off the MicroC parser */
 
 %{
 open Ast
 %}
 
-%token SEMI LPAREN RPAREN LBRACE RBRACE COMMA PLUS MINUS TIMES DIVIDE ASSIGN
-%token NOT EQ NEQ LT LEQ GT GEQ AND OR
-%token RETURN IF ELSE FOR WHILE INT BOOL FLOAT VOID
+%token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COMMA PLUS MINUS TIMES DIVIDE ASSIGN
+%token NOT EQ NEQ LT LEQ GT GEQ AND OR CONBIN CONCAT
+%token RETURN IF ELSE FOR WHILE INT BOOL CHAR WORD FILE ARRAY VOID
 %token <int> LITERAL
 %token <bool> BLIT
-%token <string> ID FLIT
+%token <string> ID
+%token <string> WLIT
 %token EOF
 
 %start program
@@ -24,6 +25,8 @@ open Ast
 %left LT GT LEQ GEQ
 %left PLUS MINUS
 %left TIMES DIVIDE
+%left CONCAT
+%right CONBIN
 %right NOT NEG
 
 
@@ -41,23 +44,25 @@ fdecl:
    typ ID LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
      { { typ = $1;
 	 fname = $2;
-	 formals = List.rev $4;
+	 formals = $4;
 	 locals = List.rev $7;
 	 body = List.rev $8 } }
 
 formals_opt:
     /* nothing */ { [] }
-  | formal_list   { $1 }
+  | formal_list   { List.rev $1 }
 
 formal_list:
     typ ID                   { [($1,$2)]     }
   | formal_list COMMA typ ID { ($3,$4) :: $1 }
 
 typ:
-    INT   { Int   }
-  | BOOL  { Bool  }
-  | FLOAT { Float }
-  | VOID  { Void  }
+    INT    { Int  }
+  | BOOL   { Bool }
+  | CHAR   { Char }
+  | WORD   { Word }
+  | FILE   { File }
+  | VOID   { Void }
 
 vdecl_list:
     /* nothing */    { [] }
@@ -65,6 +70,15 @@ vdecl_list:
 
 vdecl:
    typ ID SEMI { ($1, $2) }
+  | typ ID LBRACKET RBRACKET SEMI { (Array($1), $2) }
+
+arry_opt:
+    /* empty */ { [] }
+    | arry { List.rev $1 }
+
+arry:
+    expr              { [$1] }
+    | arry COMMA expr { $3 :: $1 }
 
 stmt_list:
     /* nothing */  { [] }
@@ -86,9 +100,10 @@ expr_opt:
 
 expr:
     LITERAL          { Literal($1)            }
-  | FLIT	     { Fliteral($1)           }
   | BLIT             { BoolLit($1)            }
   | ID               { Id($1)                 }
+  | WLIT             { WordLit($1)            }
+  | LBRACKET arry_opt RBRACKET { ArrayLit($2) }
   | expr PLUS   expr { Binop($1, Add,   $3)   }
   | expr MINUS  expr { Binop($1, Sub,   $3)   }
   | expr TIMES  expr { Binop($1, Mult,  $3)   }
@@ -101,8 +116,10 @@ expr:
   | expr GEQ    expr { Binop($1, Geq,   $3)   }
   | expr AND    expr { Binop($1, And,   $3)   }
   | expr OR     expr { Binop($1, Or,    $3)   }
+  | expr CONCAT expr { Binop($1, Concat, $3)  }
   | MINUS expr %prec NEG { Unop(Neg, $2)      }
   | NOT expr         { Unop(Not, $2)          }
+  | CONBIN expr      { Unop(Conbin, $2)       }
   | ID ASSIGN expr   { Assign($1, $3)         }
   | ID LPAREN args_opt RPAREN { Call($1, $3)  }
   | LPAREN expr RPAREN { $2                   }

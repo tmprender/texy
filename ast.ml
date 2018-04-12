@@ -1,23 +1,24 @@
-(* Abstract Syntax Tree and functions for printing it *)
+(* Abstract Syntax Tree and functions for printing it  - based off MicroC ast*)
 
 type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
-          And | Or
+          And | Or | Concat
 
-type uop = Neg | Not
+type uop = Neg | Not | Conbin
 
-type typ = Int | Bool | Float | Void
+type typ = Int | Bool | Word | Char | File | Void | Array of typ
 
 type bind = typ * string
 
 type expr =
     Literal of int
-  | Fliteral of string
+  | WordLit of string
   | BoolLit of bool
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
   | Assign of string * expr
   | Call of string * expr list
+  | ArrayLit of expr list
   | Noexpr
 
 type stmt =
@@ -38,6 +39,7 @@ type func_decl = {
 
 type program = bind list * func_decl list
 
+
 (* Pretty-printing functions *)
 
 let string_of_op = function
@@ -53,14 +55,17 @@ let string_of_op = function
   | Geq -> ">="
   | And -> "&&"
   | Or -> "||"
+  | Concat -> "+^"
 
 let string_of_uop = function
     Neg -> "-"
   | Not -> "!"
+  | Conbin -> "#"
 
 let rec string_of_expr = function
     Literal(l) -> string_of_int l
-  | Fliteral(l) -> l
+  | WordLit(w) -> w
+  | ArrayLit(arr) -> "[" ^ String.concat ", " (List.map string_of_expr arr) ^ "]"
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
   | Id(s) -> s
@@ -85,13 +90,17 @@ let rec string_of_stmt = function
       string_of_expr e3  ^ ") " ^ string_of_stmt s
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
 
-let string_of_typ = function
+let rec string_of_typ = function
     Int -> "int"
   | Bool -> "bool"
-  | Float -> "float"
+  | Word -> "word"
+  | Char -> "char"
+  | File -> "file"
   | Void -> "void"
+  | Array(t) -> string_of_typ t ^ "[]"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
+
 
 let string_of_fdecl fdecl =
   string_of_typ fdecl.typ ^ " " ^
