@@ -1,16 +1,17 @@
 (* Abstract Syntax Tree and functions for printing it *)
 
 type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
-          And | Or
+          And | Or | Concat
 
-type uop = Neg | Not
+type uop = Neg | Not | Conbin
 
-type typ = Int | Bool | Float | Void
+type typ = Int | Bool | Float | Word | Char | File | Void | Array | Struct of string
 
 type bind = typ * string
 
 type expr =
     Literal of int
+  | WordLit of string
   | Fliteral of string
   | BoolLit of bool
   | Id of string
@@ -18,6 +19,8 @@ type expr =
   | Unop of uop * expr
   | Assign of string * expr
   | Call of string * expr list
+  | ArrayLit of expr array
+  | StructVar of expr * string
   | Noexpr
 
 type stmt =
@@ -36,7 +39,16 @@ type func_decl = {
     body : stmt list;
   }
 
-type program = bind list * func_decl list
+type struct_decl = {
+    sname: string;
+    vars: bind list;
+  }
+
+type program = {
+    var_decls: bind list;
+    struct_decls: struct_decl list;
+    func_decls: func_decl list;
+}
 
 (* Pretty-printing functions *)
 
@@ -61,6 +73,8 @@ let string_of_uop = function
 let rec string_of_expr = function
     Literal(l) -> string_of_int l
   | Fliteral(l) -> l
+  | WordLit(w) -> w
+  | ArrayLit(arr) -> "[" ^ String.concat ", " (List.map string_of_expr (Array.to_list arr)) ^ "]"
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
   | Id(s) -> s
@@ -70,6 +84,7 @@ let rec string_of_expr = function
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
+  | StructVar(s, v) -> string_of_expr s ^ "." ^ v
   | Noexpr -> ""
 
 let rec string_of_stmt = function
@@ -89,9 +104,17 @@ let string_of_typ = function
     Int -> "int"
   | Bool -> "bool"
   | Float -> "float"
+  | Word -> "word"
+  | Char -> "char"
+  | File -> "file"
   | Void -> "void"
+  | Array -> "array[]"
+  | Struct(s) -> "struct " ^ s
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
+
+let string_of_sdecl sdecl =
+  "struct " ^ sdecl.sname ^  " {\n" ^ String.concat "" (List.map string_of_vdecl sdecl.vars) ^ "};\n"
 
 let string_of_fdecl fdecl =
   string_of_typ fdecl.typ ^ " " ^
@@ -102,5 +125,6 @@ let string_of_fdecl fdecl =
   "}\n"
 
 let string_of_program (vars, funcs) =
-  String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
-  String.concat "\n" (List.map string_of_fdecl funcs)
+  String.concat "" (List.map string_of_sdecl program.struct_decls) ^ "\n"  ^
+  String.concat "\n" (List.map string_of_vdecl program.var_decls) ^ "\n" ^
+  String.concat "\n" (List.map string_of_fdecl program.func_decls)
