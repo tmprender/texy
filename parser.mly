@@ -6,10 +6,10 @@ open Ast
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COMMA PLUS MINUS TIMES DIVIDE ASSIGN
 %token NOT EQ NEQ LT LEQ GT GEQ AND OR CONBIN CONCAT
-%token RETURN IF ELSE FOR WHILE INT BOOL CHAR WORD FILE ARRAY VOID
+%token RETURN IF ELSE FOR WHILE INT BOOL FLOAT CHAR WORD FILE ARRAY VOID
 %token <int> LITERAL
 %token <bool> BLIT
-%token <string> ID
+%token <string> ID FLIT
 %token <string> WLIT
 %token EOF
 
@@ -60,6 +60,7 @@ typ:
     INT    { Int  }
   | BOOL   { Bool }
   | CHAR   { Char }
+  | FLOAT { Float }
   | WORD   { Word }
   | FILE   { File }
   | VOID   { Void }
@@ -100,6 +101,7 @@ expr_opt:
 
 expr:
     LITERAL          { Literal($1)            }
+  | FLIT	           { Fliteral($1)           }
   | BLIT             { BoolLit($1)            }
   | ID               { Id($1)                 }
   | WLIT             { WordLit($1)            }

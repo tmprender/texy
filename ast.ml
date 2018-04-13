@@ -5,12 +5,13 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
 
 type uop = Neg | Not | Conbin
 
-type typ = Int | Bool | Word | Char | File | Void | Array of typ
+type typ = Int | Bool | Word | Char | Float | File | Void | Array of typ
 
 type bind = typ * string
 
 type expr =
     Literal of int
+  | Fliteral of string
   | WordLit of string
   | BoolLit of bool
   | Id of string
@@ -64,6 +65,7 @@ let string_of_uop = function
 
 let rec string_of_expr = function
     Literal(l) -> string_of_int l
+  | Fliteral(l) -> l
   | WordLit(w) -> w
   | ArrayLit(arr) -> "[" ^ String.concat ", " (List.map string_of_expr arr) ^ "]"
   | BoolLit(true) -> "true"
@@ -94,6 +96,7 @@ let rec string_of_typ = function
     Int -> "int"
   | Bool -> "bool"
   | Word -> "word"
+  | Float -> "float"
   | Char -> "char"
   | File -> "file"
   | Void -> "void"

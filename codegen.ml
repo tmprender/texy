@@ -27,6 +27,7 @@ let translate (globals, functions) =
   let i32_t      = L.i32_type    context
   and i8_t       = L.i8_type     context
   and i1_t       = L.i1_type     context
+  and float_t    = L.double_type context
   and void_t     = L.void_type   context 
   in
   let string_t   = L.pointer_type i8_t 
@@ -38,6 +39,7 @@ let translate (globals, functions) =
   let ltype_of_typ = function
       A.Int   -> i32_t
     | A.Bool  -> i1_t
+    | A.Float -> float_t
     | A.Void  -> void_t
 
     | A.Word  -> string_t
@@ -48,7 +50,8 @@ let translate (globals, functions) =
   let global_vars : L.llvalue StringMap.t =
     let global_var m (t, n) = 
       let init = match t with
-          _ -> L.const_int (ltype_of_typ t) 0
+          A.Float -> L.const_float (ltype_of_typ t) 0.0
+        | _ -> L.const_int (ltype_of_typ t) 0
       in StringMap.add n (L.define_global n init the_module) m in
     List.fold_left global_var StringMap.empty globals in
 
@@ -79,7 +82,8 @@ let translate (globals, functions) =
     let builder = L.builder_at_end context (L.entry_block the_function) in
 
     let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder
-    and str_format_str = L.build_global_stringptr "%s\n" "fmt2" builder in
+    and str_format_str = L.build_global_stringptr "%s\n" "fmt" builder 
+    and float_format_str = L.build_global_stringptr "%g\n" "fmt" builder in
 
     (* Construct the function's "locals": formal arguments and locally
        declared variables.  Allocate each on the stack, initialize their
@@ -113,7 +117,8 @@ let translate (globals, functions) =
     (* Construct code for an expression; return its value *)
     let rec expr builder ((ty, e) : sexpr) = match e with
         SLiteral i -> L.const_int i32_t i
-      | SWordLit s -> L.build_global_stringptr s "str" builder
+      | SWordLit s -> L.build_global_stringptr s "wrd" builder
+      | SFliteral l -> L.const_float_of_string float_t l
       | SBoolLit b -> L.const_int i1_t (if b then 1 else 0)
       | SNoexpr -> L.const_int i32_t 0
       | SId s -> L.build_load (lookup s) s builder
@@ -122,8 +127,23 @@ let translate (globals, functions) =
       | SBinop (e1, op, e2) ->
 	  let (t, _) = e1
 	  and e1' = expr builder e1
-	  and e2' = expr builder e2 in
-	  (match op with
+    and e2' = expr builder e2 in
+    if t = A.Float then (match op with 
+    A.Add     -> L.build_fadd
+  | A.Sub     -> L.build_fsub
+  | A.Mult    -> L.build_fmul
+  | A.Div     -> L.build_fdiv 
+  | A.Equal   -> L.build_fcmp L.Fcmp.Oeq
+  | A.Neq     -> L.build_fcmp L.Fcmp.One
+  | A.Less    -> L.build_fcmp L.Fcmp.Olt
+  | A.Leq     -> L.build_fcmp L.Fcmp.Ole
+  | A.Greater -> L.build_fcmp L.Fcmp.Ogt
+  | A.Geq     -> L.build_fcmp L.Fcmp.Oge
+  | A.And | A.Or ->
+      raise (Failure "internal error: semant should have rejected and/or on float")
+  | A.Concat -> raise (Failure "operator to be implmented")
+  ) e1' e2' "tmp" builder 
+  else (match op with
 	  | A.Add     -> L.build_add
 	  | A.Sub     -> L.build_sub
 	  | A.Mult    -> L.build_mul
@@ -135,16 +155,22 @@ let translate (globals, functions) =
 	  | A.Less    -> L.build_icmp L.Icmp.Slt
 	  | A.Leq     -> L.build_icmp L.Icmp.Sle
 	  | A.Greater -> L.build_icmp L.Icmp.Sgt
-	  | A.Geq     -> L.build_icmp L.Icmp.Sge
+    | A.Geq     -> L.build_icmp L.Icmp.Sge
+    | A.Concat -> raise (Failure "operator to be implmented")
 	  ) e1' e2' "tmp" builder
       | SUnop(op, e) ->
 	  let (t, _) = e in
           let e' = expr builder e in
 	  (match op with
-	    A.Neg                  -> L.build_neg
-    | A.Not                  -> L.build_not) e' "tmp" builder
+    A.Neg when t = A.Float -> L.build_fneg 
+  | A.Neg                  -> L.build_neg
+  | A.Conbin -> raise (Failure "operator to be implmented")
+  | A.Not                  -> L.build_not) e' "tmp" builder
       | SCall ("print", [e]) | SCall ("printb", [e]) ->
 	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
+      "printf" builder
+      | SCall ("printf", [e]) -> 
+	  L.build_call printf_func [| float_format_str ; (expr builder e) |]
 	    "printf" builder
       | SCall ("printbig", [e]) ->
 	  L.build_call printbig_func [| (expr builder e) |] "printbig" builder
@@ -253,6 +279,7 @@ let translate (globals, functions) =
     (* Add a return if the last block falls off the end *)
     add_terminal builder (match fdecl.styp with
         A.Void -> L.build_ret_void
+      | A.Float -> L.build_ret (L.const_float float_t 0.0)
       | t -> L.build_ret (L.const_int (ltype_of_typ t) 0))
   in
 

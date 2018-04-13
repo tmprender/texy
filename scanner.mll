@@ -43,6 +43,7 @@ rule token = parse
 | "char"   { CHAR }
 | "Word"   { WORD }
 | "File"   { FILE }
+| "float"  { FLOAT }
 | "void"   { VOID }
 | "true"   { BLIT(true)  }
 | "false"  { BLIT(false) }
