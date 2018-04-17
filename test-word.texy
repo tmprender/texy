@@ -1,7 +1,8 @@
 int main()
 {
   Word a;
-  a = "Hello World";
+  a = "word is working...";
   printword(a);
+  open();
   return 0;
 }

@@ -46,7 +46,8 @@ let check (globals, functions) =
                                ("printb", Bool);
 			                         ("printf", Float);
                                ("printword", Word);
-			                         ("printbig", Int) ]
+			                         ("printbig", Int);
+				("read, File") ]
   in
 
   (* Add function name to symbol table *)
