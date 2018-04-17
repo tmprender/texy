@@ -3,6 +3,7 @@ int main()
   Word a;
   a = "word is working...";
   printword(a);
-  open();
+  File f;
+  open(f);
   return 0;
 }

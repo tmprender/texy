@@ -47,7 +47,10 @@ let check (globals, functions) =
 			                         ("printf", Float);
                                ("printword", Word);
 			                         ("printbig", Int);
-				("read, File") ]
+				("open", File); 
+						 ("close", File);
+				("read", File);
+						 ("write", File); ]
   in
 
   (* Add function name to symbol table *)

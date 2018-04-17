@@ -64,7 +64,7 @@ let translate (globals, functions) =
   let printbig_t = L.function_type i32_t [| i32_t |] in
   let printbig_func = L.declare_function "printbig" printbig_t the_module in
 
-(*  (* Declare the built-in open() function *)
+ (* Declare the built-in open() function *)
   let open_t = L.function_type p_t [| L.pointer_type i8_t; L.pointer_type i8_t |] in
   let open_func = L.declare_function "fopen" open_t the_module in
 
@@ -79,7 +79,7 @@ let translate (globals, functions) =
   (* Declare the built-in fread() function as read() *)
   let read_t = L.function_type i32_t [| p_t; i32_t; i32_t; p_t |] in 
   let read_func = L.declare_function "fread" read_t the_module in
-*)
+
   let to_imp str = raise (Failure ("Not yet implemented: " ^ str)) in
 
   (* Define each function (arguments and return type) so we can 
@@ -195,7 +195,13 @@ let translate (globals, functions) =
 	  L.build_call printf_func [| str_format_str ; (expr builder e) |]
 	    "printf" builder
       | SCall ("read", [e]) -> 
-   	  L.build_call read_line [| (expr builder e) |] "read" builder
+   	  L.build_call read_func [| (expr builder e) |] "read" builder
+      | SCall ("open", [e]) ->
+          L.build_call open_func [| (expr builder e) |] "open" builder
+      | SCall ("write", [e]) ->
+          L.build_call write_func [| (expr builder e) |] "write" builder
+      | SCall ("close", [e]) ->
+          L.build_call close_func [| (expr builder e) |] "close" builder
       | SCall (f, args) ->
          let (fdef, fdecl) = StringMap.find f function_decls in
 	 let llargs = List.rev (List.map (expr builder) (List.rev args)) in

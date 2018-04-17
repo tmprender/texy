@@ -20,6 +20,7 @@ type expr =
   | Assign of string * expr
   | Call of string * expr list
   | ArrayLit of expr list
+ (* | File of expr list *)
   | Noexpr
 
 type stmt =
