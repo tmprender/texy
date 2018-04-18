@@ -4,71 +4,23 @@ seg2181, zh2312, xz2432, tmp2133
 This deliverable was tested using Ubuntu 16.04 and LLVM 3.8
 
 To compile and test:
- $ ./testhello.sh
+ $ make
+ $ ./testall.sh
 
  The script is included in the main folder.
 
 ##########################################
 
- Proper output that we recieved on our VM is:
+New features implemented:
 
-$ ./testhello.sh 
-rm -f *.o
-ocamlbuild -use-ocamlfind -pkgs llvm,llvm.analysis -cflags -w,+a-4 \
-        texy.native
-Finished, 25 targets (0 cached) in 00:00:01.
-Generating llvm code...
-; ModuleID = 'Texy'
+Static Array for types: Int, Float, Word, Bool
+ test-array.texy
+ fail-array1.texy
+ fail-array2.texy
 
-@fmt = private unnamed_addr constant [4 x i8] c"%s\0A\00"
-@str = private unnamed_addr constant [14 x i8] c"Hello World!!\00"
+File I/O and open/close, read/write
+ test-file.texy
+ 
+Word (our implementation of string)
+ test-word.texy
 
-declare i32 @printf(i8*, ...)
-
-define i32 @main() {
-entry:
-  %printf = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @fmt, i32 0, i32 0), i8* getelementptr inbounds ([14 x i8], [14 x i8]* @str, i32 0, i32 0))
-  ret i32 0
-}
-
-Generating assembly...
-        .text
-        .file   "test-hello.ll"
-        .globl  main
-        .align  16, 0x90
-        .type   main,@function
-main:                                   # @main
-        .cfi_startproc
-# BB#0:                                 # %entry
-        pushq   %rax
-.Ltmp0:
-        .cfi_def_cfa_offset 16
-        movl    $.Lfmt, %edi
-        movl    $.Lstr, %esi
-        xorl    %eax, %eax
-        callq   printf
-        xorl    %eax, %eax
-        popq    %rcx
-        retq
-.Lfunc_end0:
-        .size   main, .Lfunc_end0-main
-        .cfi_endproc
-
-        .type   .Lfmt,@object           # @fmt
-        .section        .rodata.str1.1,"aMS",@progbits,1
-.Lfmt:
-        .asciz  "%s\n"
-        .size   .Lfmt, 4
-
-        .type   .Lstr,@object           # @str
-.Lstr:
-        .asciz  "Hello World!!"
-        .size   .Lstr, 14
-
-
-        .section        ".note.GNU-stack","",@progbits
-
-Compiling assembly with C compiler assembly...
-
-Output:
-Hello World!!
