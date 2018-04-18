@@ -20,6 +20,7 @@ Static Array for types: Int, Float, Word, Bool
 
 File I/O and open/close, read/write
  test-file.texy
+ test-file.txt (DO NOT REMOVE FILE FROM MAIN DIRECTORY)
  
 Word (our implementation of string)
  test-word.texy
