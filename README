@@ -14,14 +14,20 @@ To compile and test:
 New features implemented:
 
 Static Array for types: Int, Float, Word, Bool
- test-array.texy
- fail-array1.texy
- fail-array2.texy
+ test-array.texy  (Declare, Assignment and Access of Word Array)
+ fail-array1.texy (type mismatch in same array)
+ fail-array2.texy (bad index, not using integer)
 
 File I/O and open/close, read/write
- test-file.texy
+ test-file.texy (also tests Word, our implementation of string)
  test-file.txt (DO NOT REMOVE FILE FROM MAIN DIRECTORY)
  
-Word (our implementation of string)
- test-word.texy
 
+
+OTHER TESTS:
+ fail-function.texy -> duplicate function name
+ test-fib.texy -> recursion succesful
+ test-func1.texy -> tests simple function successfully
+ test-gloabl1.texy -> tests that global vairables are recognized and working
+ test-if1.texy -> control flow of IF
+ test-while1.texy -> control flow of WHILE 
