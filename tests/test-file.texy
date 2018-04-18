@@ -4,9 +4,10 @@ int main()
   Word space;
   int s;
   space = calloc(1,500);
-  f = open("test-hello.texy", "r");
+  f = open("test-file.txt", "r");
   s = read(space, 1, 500, f);
-  printword(space);
+  printword("Characters in test-file.txt:");
+  print(s);
   close(f);
   free(space);
   return 0;

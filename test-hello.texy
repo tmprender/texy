@@ -1,5 +1,0 @@
-int main()
-{
-  printword("Hello World!!");
-  return 0;
-}
