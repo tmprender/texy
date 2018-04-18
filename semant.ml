@@ -57,7 +57,27 @@ let check (globals, functions) =
       typ = File; fname = "close"; 
       formals = [(File,"x")]; 
       locals = []; body = [] } built_in_decls
+
+  in let built_in_decls = StringMap.add "read" {
+      typ = Int; fname = "read"; 
+      formals = [(Word,"x");(Int,"y");(Int,"z");(File,"w")]; 
+      locals = []; body = [] } built_in_decls
+  
+  in let built_in_decls = StringMap.add "write" {
+      typ = File; fname = "write"; 
+      formals = [(Word,"x");(File,"y")]; 
+      locals = []; body = [] } built_in_decls
     
+  in let built_in_decls = StringMap.add "calloc" {
+      typ = Word; fname = "calloc"; 
+      formals = [(Int,"x");(Int,"y")]; 
+      locals = []; body = [] } built_in_decls
+
+  in let built_in_decls = StringMap.add "free" {
+      typ = File; fname = "free"; 
+      formals = [(Word,"x")]; 
+      locals = []; body = [] } built_in_decls
+
   in
 
   (* Add function name to symbol table *)

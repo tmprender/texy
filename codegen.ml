@@ -209,13 +209,13 @@ let translate (globals, functions) =
       | SCall ("open", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
       L.build_call open_func (Array.of_list x) "fopen" builder
       | SCall ("close", [e]) -> 
-    L.build_call close_func [| (expr builder e) |] "close" builder
-      | SCall ("read", [e]) -> 
-    L.build_call read_func [|  (expr builder e) |] "read" builder
-      | SCall ("write", [e]) -> 
-    L.build_call write_func [| (expr builder e) |] "write" builder
-      | SCall ("calloc", [e]) -> 
-    L.build_call calloc_func [| (expr builder e) |] "calloc" builder
+    L.build_call close_func [| (expr builder e) |] "fclose" builder
+      | SCall ("read", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
+      L.build_call read_func (Array.of_list x) "fread" builder
+      | SCall ("write", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
+      L.build_call write_func (Array.of_list x) "fputs" builder
+      | SCall ("calloc", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
+      L.build_call calloc_func (Array.of_list x) "calloc" builder
       | SCall ("free", [e]) -> 
 	  L.build_call free_func [| (expr builder e) |] "free" builder
       | SCall (f, args) ->
