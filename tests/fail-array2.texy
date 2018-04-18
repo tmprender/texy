@@ -1,0 +1,7 @@
+int main()
+{
+  Word a[];
+  a = ["1","2",3];
+  printword(a["4"]);
+  return 0;
+}
