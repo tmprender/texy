@@ -14,6 +14,7 @@ type expr =
   | Fliteral of string
   | WordLit of string
   | BoolLit of bool
+	| ArrAcc of string * expr
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
@@ -77,6 +78,8 @@ let rec string_of_expr = function
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
+  | ArrAcc(n, e) ->
+      n ^ "[" ^ string_of_expr e ^ "]"
   | Noexpr -> ""
 
 let rec string_of_stmt = function

@@ -103,6 +103,16 @@ let check (globals, functions) =
       | WordLit l -> (Word, SWordLit l)
       | BoolLit l  -> (Bool, SBoolLit l)
       | Noexpr     -> (Void, SNoexpr)
+      | ArrAcc (s, e) -> let (ty,_) = expr e in
+          if ty != Int then raise(Failure("Array index must be integer"))
+          else let aty = type_of_identifier s in 
+          let accty = match aty with
+          Array(Int)    -> Int
+        | Array(Float)  -> Float
+        | Array(Word) -> Word
+        | Array(Bool)   -> Bool
+        | _	-> raise(Failure (s^" is not a valid array ID")) in
+           (accty, SArrAcc(s, expr e))
       | Id s       -> (type_of_identifier s, SId s)
       | Assign(var, e) as ex -> 
           let lt = type_of_identifier var

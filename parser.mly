@@ -63,7 +63,7 @@ typ:
   | FLOAT { Float }
   | WORD   { Word }
   | FILE   { File }
-  | VOID   { Void }
+  | VOID   { Void } 
 
 vdecl_list:
     /* nothing */    { [] }
@@ -105,6 +105,7 @@ expr:
   | BLIT             { BoolLit($1)            }
   | ID               { Id($1)                 }
   | WLIT             { WordLit($1)            }
+  | ID LBRACKET expr RBRACKET {ArrAcc($1,$3)}
   | LBRACKET arry_opt RBRACKET { ArrayLit($2) }
   | expr PLUS   expr { Binop($1, Add,   $3)   }
   | expr MINUS  expr { Binop($1, Sub,   $3)   }

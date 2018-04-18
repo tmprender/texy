@@ -29,11 +29,10 @@ let translate (globals, functions) =
   and i1_t       = L.i1_type     context
   and float_t    = L.double_type context
   and void_t     = L.void_type   context 
-  in
-  let string_t   = L.pointer_type i8_t 
   (* Create an LLVM module -- this is a "container" into which we'll 
      generate actual code *)
   and the_module = L.create_module context "TeXy" in
+  let string_t   = L.pointer_type i8_t in
 
   (* Convert MicroC types to LLVM types *)
   let ltype_of_typ = function
@@ -43,8 +42,16 @@ let translate (globals, functions) =
     | A.Void  -> void_t
 
     | A.Word  -> string_t
-    | t -> raise (Failure ("Type " ^ A.string_of_typ t ^ " not implemented yet"))
+    | A.Char -> raise (Failure ("Type " ^ A.string_of_typ A.Char ^ " not implemented yet"))
+    | A.File -> raise (Failure ("Type " ^ A.string_of_typ A.File ^ " not implemented yet"))
+    | A.Array t  -> match t with 
+          A.Int -> L.pointer_type i32_t
+        | A.Bool -> L.pointer_type i1_t
+        | A.Float -> L.pointer_type float_t
+        | A.Word -> L.pointer_type string_t
+        | t -> raise (Failure ("Array of " ^ A.string_of_typ t ^ " not implemented yet"))
   in
+
 
   (* Declare each global variable; remember its value in a map *)
   let global_vars : L.llvalue StringMap.t =
@@ -62,8 +69,6 @@ let translate (globals, functions) =
 
   let printbig_t = L.function_type i32_t [| i32_t |] in
   let printbig_func = L.declare_function "printbig" printbig_t the_module in
-
-  let to_imp str = raise (Failure ("Not yet implemented: " ^ str)) in
 
   (* Define each function (arguments and return type) so we can 
    * define it's body and call it later *)
@@ -115,7 +120,7 @@ let translate (globals, functions) =
     in
 
     (* Construct code for an expression; return its value *)
-    let rec expr builder ((ty, e) : sexpr) = match e with
+    let rec expr builder ((_, e) : sexpr) = match e with
         SLiteral i -> L.const_int i32_t i
       | SWordLit s -> L.build_global_stringptr s "wrd" builder
       | SFliteral l -> L.const_float_of_string float_t l
@@ -184,7 +189,26 @@ let translate (globals, functions) =
                         A.Void -> ""
                       | _ -> f ^ "_result") in
          L.build_call fdef (Array.of_list llargs) result builder
-      | _ -> to_imp (string_of_sexpr (ty,e))  
+      | SArrAcc (s, e) ->
+          let idx = expr builder e in
+          let arr = lookup s in
+          let arr = L.build_load arr "" builder in
+          let s' = L.build_gep arr [| idx |] "" builder in
+          let s' = L.build_load s' "" builder in
+          s' 
+
+      | SArrayLit sel ->
+          let al = List.map (expr builder) sel in
+          let ty = L.type_of (List.hd al) in
+          let sz = List.length al in
+          let aty = L.array_type ty sz in
+          let arrp = L.build_alloca aty "" builder in
+          let fill i v = 
+            let vp = L.build_gep arrp [|L.const_int i32_t 0; L.const_int i32_t i|] "" builder in
+            ignore(L.build_store v vp builder);
+            in List.iteri fill al; 
+          let arrp' = L.build_gep arrp [|L.const_int i32_t 0; L.const_int i32_t 0|] "" builder in
+          arrp'
     in
     
     (* Each basic block in a program ends with a "terminator" instruction i.e.

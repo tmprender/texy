@@ -10,7 +10,8 @@ all : texy.native
 .PHONY : texy.native
 texy.native :
 	rm -f *.o
-	ocamlbuild -use-ocamlfind -pkgs llvm,llvm.analysis -cflags -w,+a-4 texy.native
+	ocamlbuild -use-ocamlfind -pkgs llvm,llvm.analysis -cflags -w,+a-4\
+		 texy.native
 
 # "make clean" removes all generated files
 
