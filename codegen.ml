@@ -32,7 +32,7 @@ let translate (globals, functions) =
   (* Create an LLVM module -- this is a "container" into which we'll 
      generate actual code *)
   and the_module = L.create_module context "TeXy" in
-  let string_t   = L.pointer_type i8_t in
+  let i8_pt   = L.pointer_type i8_t in
 
   (* Convert MicroC types to LLVM types *)
   let ltype_of_typ = function
@@ -41,14 +41,14 @@ let translate (globals, functions) =
     | A.Float -> float_t
     | A.Void  -> void_t
 
-    | A.Word  -> string_t
+    | A.Word  -> i8_pt
     | A.Char -> raise (Failure ("Type " ^ A.string_of_typ A.Char ^ " not implemented yet"))
-    | A.File -> raise (Failure ("Type " ^ A.string_of_typ A.File ^ " not implemented yet"))
+    | A.File -> i8_pt
     | A.Array t  -> match t with 
           A.Int -> L.pointer_type i32_t
         | A.Bool -> L.pointer_type i1_t
         | A.Float -> L.pointer_type float_t
-        | A.Word -> L.pointer_type string_t
+        | A.Word -> L.pointer_type i8_pt
         | t -> raise (Failure ("Array of " ^ A.string_of_typ t ^ " not implemented yet"))
   in
 
@@ -63,9 +63,33 @@ let translate (globals, functions) =
     List.fold_left global_var StringMap.empty globals in
 
   let printf_t : L.lltype = 
-      L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
+    L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func : L.llvalue = 
-     L.declare_function "printf" printf_t the_module in
+    L.declare_function "printf" printf_t the_module in
+    
+  (* Declare the built-in open() function *)
+  let open_t = L.function_type i8_pt [| L.pointer_type i8_t; L.pointer_type i8_t |] in    
+  let open_func = L.declare_function "fopen" open_t the_module in
+
+  (* Declare the built-in close() function *)
+  let close_t = L.function_type i32_t [| i8_pt |] in
+  let close_func = L.declare_function "fclose" close_t the_module in
+   
+  (* Declare the built-in fputs() function as write() *)
+  let write_t = L.function_type i32_t [| L.pointer_type i8_t; i8_pt |] in 
+  let write_func = L.declare_function "fputs" write_t the_module in
+
+  (* Declare the built-in fread() function as read() *)
+  let read_t = L.function_type i32_t [| i8_pt; i32_t; i32_t; i8_pt |] in 
+  let read_func = L.declare_function "fread" read_t the_module in
+
+  (* Declare heap storage function *)
+  let calloc_t = L.function_type i8_pt [| i32_t ; i32_t|] in 
+  let calloc_func = L.declare_function "calloc" calloc_t the_module in
+
+  (* Declare free from heap *)
+  let free_t = L.function_type i8_pt [| i8_pt |] in 
+  let free_func = L.declare_function "free" free_t the_module in
 
   let printbig_t = L.function_type i32_t [| i32_t |] in
   let printbig_func = L.declare_function "printbig" printbig_t the_module in
@@ -181,7 +205,19 @@ let translate (globals, functions) =
 	  L.build_call printbig_func [| (expr builder e) |] "printbig" builder
       | SCall ("printword", [e]) -> 
 	  L.build_call printf_func [| str_format_str ; (expr builder e) |]
-	    "printf" builder
+      "printf" builder
+      | SCall ("open", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
+      L.build_call open_func (Array.of_list x) "fopen" builder
+      | SCall ("close", [e]) -> 
+    L.build_call close_func [| (expr builder e) |] "close" builder
+      | SCall ("read", [e]) -> 
+    L.build_call read_func [|  (expr builder e) |] "read" builder
+      | SCall ("write", [e]) -> 
+    L.build_call write_func [| (expr builder e) |] "write" builder
+      | SCall ("calloc", [e]) -> 
+    L.build_call calloc_func [| (expr builder e) |] "calloc" builder
+      | SCall ("free", [e]) -> 
+	  L.build_call free_func [| (expr builder e) |] "free" builder
       | SCall (f, args) ->
          let (fdef, fdecl) = StringMap.find f function_decls in
 	 let llargs = List.rev (List.map (expr builder) (List.rev args)) in

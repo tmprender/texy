@@ -46,7 +46,18 @@ let check (globals, functions) =
                                ("printb", Bool);
 			                         ("printf", Float);
                                ("printword", Word);
-			                         ("printbig", Int) ]
+                               ("printbig", Int) ]
+                               
+  in let built_in_decls = StringMap.add "open" {
+    typ = File; fname = "open"; 
+    formals = [(Word,"x"); (Word,"y")]; 
+    locals = []; body = [] } built_in_decls
+
+  in let built_in_decls = StringMap.add "close" {
+      typ = File; fname = "close"; 
+      formals = [(File,"x")]; 
+      locals = []; body = [] } built_in_decls
+    
   in
 
   (* Add function name to symbol table *)

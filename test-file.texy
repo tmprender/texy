@@ -1,0 +1,7 @@
+int main()
+{
+  File f;
+  f = open("test-hello.texy", "r");
+  close(f);
+  return 0;
+}
