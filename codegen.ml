@@ -49,6 +49,7 @@ let translate (globals, functions) =
         | A.Bool -> L.pointer_type i1_t
         | A.Float -> L.pointer_type float_t
         | A.Word -> L.pointer_type i8_pt
+        | A.Char -> L.pointer_type i8_t
         | t -> raise (Failure ("Array of " ^ A.string_of_typ t ^ " not implemented yet"))
   in
 

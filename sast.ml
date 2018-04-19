@@ -43,6 +43,7 @@ let rec string_of_sexpr (t, e) =
     SLiteral(l) -> string_of_int l
   | SWordLit(l) -> l
   | SFliteral(l) -> l
+  | SCharLit(l) -> Char.escaped l
   | SBoolLit(true) -> "true"
   | SBoolLit(false) -> "false"
   | SArrAcc(n, e) ->
