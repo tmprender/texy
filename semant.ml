@@ -132,6 +132,7 @@ let check (globals, functions) =
         Literal l -> (Int, SLiteral l)
       | Fliteral l -> (Float, SFliteral l)
       | WordLit l -> (Word, SWordLit l)
+      | CharLit l -> (Char, SCharLit l)
       | BoolLit l  -> (Bool, SBoolLit l)
       | Noexpr     -> (Void, SNoexpr)
       | ArrAcc (s, e) -> let (ty,_) = expr e in

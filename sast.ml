@@ -7,6 +7,7 @@ and sx =
     SLiteral of int
   | SFliteral of string
   | SWordLit of string
+  | SCharLit of char
   | SBoolLit of bool
 	| SArrAcc of string * sexpr
   | SId of string

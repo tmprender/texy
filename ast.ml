@@ -13,6 +13,7 @@ type expr =
     Literal of int
   | Fliteral of string
   | WordLit of string
+  | CharLit of char
   | BoolLit of bool
 	| ArrAcc of string * expr
   | Id of string
@@ -67,6 +68,7 @@ let string_of_uop = function
 let rec string_of_expr = function
     Literal(l) -> string_of_int l
   | Fliteral(l) -> l
+  | CharLit(l) -> Char.escaped l
   | WordLit(w) -> w
   | ArrayLit(arr) -> "[" ^ String.concat ", " (List.map string_of_expr arr) ^ "]"
   | BoolLit(true) -> "true"

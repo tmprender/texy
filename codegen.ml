@@ -42,7 +42,7 @@ let translate (globals, functions) =
     | A.Void  -> void_t
 
     | A.Word  -> i8_pt
-    | A.Char -> raise (Failure ("Type " ^ A.string_of_typ A.Char ^ " not implemented yet"))
+    | A.Char -> i8_t
     | A.File -> i8_pt
     | A.Array t  -> match t with 
           A.Int -> L.pointer_type i32_t
@@ -149,6 +149,7 @@ let translate (globals, functions) =
       | SWordLit s -> L.build_global_stringptr s "wrd" builder
       | SFliteral l -> L.const_float_of_string float_t l
       | SBoolLit b -> L.const_int i1_t (if b then 1 else 0)
+      | SCharLit c -> L.const_int i8_t (Char.code c)
       | SNoexpr -> L.const_int i32_t 0
       | SId s -> L.build_load (lookup s) s builder
       | SAssign (s, e) -> let e' = expr builder e in

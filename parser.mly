@@ -10,6 +10,7 @@ open Ast
 %token <int> LITERAL
 %token <bool> BLIT
 %token <string> ID FLIT
+%token <char> CHARLIT
 %token <string> WLIT
 %token EOF
 
@@ -103,6 +104,7 @@ expr:
     LITERAL          { Literal($1)            }
   | FLIT	           { Fliteral($1)           }
   | BLIT             { BoolLit($1)            }
+  | CHARLIT          { CharLit($1)            }
   | ID               { Id($1)                 }
   | WLIT             { WordLit($1)            }
   | ID LBRACKET expr RBRACKET {ArrAcc($1,$3)}
