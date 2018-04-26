@@ -38,45 +38,31 @@ let check (globals, functions) =
 
   (* Collect function declarations for built-in functions: no bodies *)
   let built_in_decls = 
-    let add_bind map (name, ty) = StringMap.add name {
-      typ = Void; fname = name; 
-      formals = [(ty, "x")];
-      locals = []; body = [] } map
-    in List.fold_left add_bind StringMap.empty [ ("print", Int);
-                               ("printb", Bool);
-			                         ("printf", Float);
-                               ("printword", Word);
-                               ("printbig", Int) ]
-                               
-  in let built_in_decls = StringMap.add "open" {
-    typ = File; fname = "open"; 
-    formals = [(Word,"x"); (Word,"y")]; 
-    locals = []; body = [] } built_in_decls
-
-  in let built_in_decls = StringMap.add "close" {
-      typ = File; fname = "close"; 
-      formals = [(File,"x")]; 
-      locals = []; body = [] } built_in_decls
-
-  in let built_in_decls = StringMap.add "read" {
-      typ = Int; fname = "read"; 
-      formals = [(Word,"x");(Int,"y");(Int,"z");(File,"w")]; 
-      locals = []; body = [] } built_in_decls
-  
-  in let built_in_decls = StringMap.add "write" {
-      typ = File; fname = "write"; 
-      formals = [(Word,"x");(File,"y")]; 
-      locals = []; body = [] } built_in_decls
-    
-  in let built_in_decls = StringMap.add "calloc" {
-      typ = Word; fname = "calloc"; 
-      formals = [(Int,"x");(Int,"y")]; 
-      locals = []; body = [] } built_in_decls
-
-  in let built_in_decls = StringMap.add "free" {
-      typ = File; fname = "free"; 
-      formals = [(Word,"x")]; 
-      locals = []; body = [] } built_in_decls
+    let add_bind map (name, ty) = StringMap.add name ty map
+    in List.fold_left add_bind StringMap.empty 
+    [ ("print", {typ = Void; fname = "print"; locals = []; body = [];
+      formals = [(Int, "x")] });
+      ("printb", {typ = Void; fname = "printb"; locals = []; body = [];
+      formals = [(Bool, "x")] });
+      ("printf", {typ = Void; fname = "printf"; locals = []; body = [];
+      formals = [(Float, "x")] });
+      ("printword", {typ = Void; fname = "printword"; locals = []; body = [];
+      formals = [(Word, "x")] });
+      ("printbig", {typ = Void; fname = "printbig"; locals = []; body = [];
+      formals = [(Int, "x")] });
+      ("open", {typ = File; fname = "open"; locals = []; body = [];
+      formals = [(Word,"x"); (Word,"y")] }); 
+      ("close", {typ = Int; fname = "close"; locals = []; body = [];
+      formals = [(File,"x")] });
+      ("read", {typ = Int; fname = "read"; locals = []; body = [];
+      formals = [(Word,"x");(Int,"y");(Int,"z");(File,"w")] });
+      ("write", {typ = Int; fname = "write"; locals = []; body = [];
+      formals = [(Word,"x");(File,"y")] });
+      ("calloc", {typ = Word; fname = "calloc"; locals = []; body = [];
+      formals = [(Int,"x");(Int,"y")] });
+      ("free", {typ = Void; fname = "free"; locals = []; body = [];
+      formals = [(Word,"x")] })
+    ]
 
   in
 
