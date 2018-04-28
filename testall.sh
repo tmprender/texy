@@ -13,7 +13,7 @@ LLI="lli"
 LLC="llc"
 
 # Path to the C compiler
-CC="cc"
+CC="cc -no-pie"
 
 # Path to the Texy compiler.  Usually "./texy.native"
 # Try "_build/texy.native" if ocamlbuild was unable to create a symbolic link.
