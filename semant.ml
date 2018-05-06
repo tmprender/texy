@@ -10,7 +10,10 @@ module StringMap = Map.Make(String)
 
    Check each global variable, then check each function *)
 
-let check (globals, functions) =
+let check program =
+  let globals = program.var_decls in
+  let functions = program.func_decls in
+  let structs = program.struct_decls in
 
   (* Check if a certain kind of binding has void type or is a duplicate
      of another, previously checked binding *)
