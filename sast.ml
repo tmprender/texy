@@ -43,9 +43,9 @@ type sstruct_decl = {
   }
 
 type sprogram = {
-    var_decls: bind list;
-    struct_decls: sstruct_decl list;
-    func_decls: sfunc_decl list;
+    svar_decls: bind list;
+    sstruct_decls: sstruct_decl list;
+    sfunc_decls: sfunc_decl list;
 }
 
 (* Pretty-printing functions *)
@@ -99,7 +99,7 @@ let string_of_sfdecl fdecl =
 let string_of_ssdecl sdecl =
   "struct " ^ sdecl.ssname ^  " {\n" ^ String.concat "" (List.map string_of_vdecl sdecl.svars) ^ "};\n"
 
-let string_of_program program =
-  String.concat "" (List.map string_of_ssdecl program.struct_decls) ^ "\n"  ^
-  String.concat "\n" (List.map string_of_vdecl program.var_decls) ^ "\n" ^
-  String.concat "\n" (List.map string_of_sfdecl program.func_decls)
+let string_of_program sprogram =
+  String.concat "" (List.map string_of_ssdecl sprogram.sstruct_decls) ^ "\n"  ^
+  String.concat "\n" (List.map string_of_vdecl sprogram.svar_decls) ^ "\n" ^
+  String.concat "\n" (List.map string_of_sfdecl sprogram.sfunc_decls)
