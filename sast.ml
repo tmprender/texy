@@ -18,6 +18,7 @@ and sx =
   | SAssign of string * sexpr
   | SCall of string * sexpr list
   | SArrayLit of sexpr list
+  | SStructVar of expr * string
   | SNoexpr
 
 type sstmt =
@@ -60,6 +61,7 @@ let rec string_of_sexpr (t, e) =
   | SCall(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_sexpr el) ^ ")"
   | SArrayLit(arr) -> "[" ^ String.concat ", " (List.map string_of_sexpr arr) ^ "]"
+  | SStructVar(s, v) -> string_of_expr s ^ "." ^ v
   | SNoexpr -> ""
 				  ) ^ ")"				     
 
@@ -85,6 +87,10 @@ let string_of_sfdecl fdecl =
   String.concat "" (List.map string_of_sstmt fdecl.sbody) ^
   "}\n"
 
-let string_of_sprogram (vars, funcs) =
-  String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
-  String.concat "\n" (List.map string_of_sfdecl funcs)
+let string_of_ssdecl sdecl =
+  "struct " ^ sdecl.ssname ^  " {\n" ^ String.concat "" (List.map string_of_vdecl sdecl.svars) ^ "};\n"
+
+let string_of_program program =
+  String.concat "" (List.map string_of_ssdecl program.struct_decls) ^ "\n"  ^
+  String.concat "\n" (List.map string_of_vdecl program.var_decls) ^ "\n" ^
+  String.concat "\n" (List.map string_of_sfdecl program.func_decls)
