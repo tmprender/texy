@@ -44,8 +44,8 @@ type sstruct_decl = {
 
 type sprogram = {
     var_decls: bind list;
-    struct_decls: struct_decl list;
-    func_decls: func_decl list;
+    struct_decls: sstruct_decl list;
+    func_decls: sfunc_decl list;
 }
 
 (* Pretty-printing functions *)
