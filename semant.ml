@@ -123,6 +123,14 @@ let check (globals, functions) =
       | CharLit l -> (Char, SCharLit l)
       | BoolLit l  -> (Bool, SBoolLit l)
       | Noexpr     -> (Void, SNoexpr)
+      | Concat (e1, e2) -> let (ty1, _) = expr e1 in
+          let (ty2, _) = expr e2 in
+          if ty1 != Word then raise(Failure("Can only concat words")) else
+          if ty2 != Word then raise(Failure("Can only concat words"))
+          else (Word, SConcat((expr e1), (expr e2)))
+      | Conbin e -> let (ty, _) = expr e in
+          if ty != Word then raise(Failure("Conbin can only be applied to words"))
+          else (Word, SConbin (expr e))      
       | ArrAcc (s, e) -> let (ty,_) = expr e in
           if ty != Int then raise(Failure("Array index must be integer"))
           else let aty = type_of_identifier s in 

@@ -98,6 +98,9 @@ let translate (globals, functions) =
   let conbin_t = L.function_type i8_pt [| i8_pt |] in
   let conbin_func = L.declare_function "conbin" conbin_t the_module in
 
+  let concat_t = L.function_type i8_pt [| i8_pt ; i8_pt |] in 
+  let concat_func = L.declare_function "concat" concat_t the_module in
+
   (* Define each function (arguments and return type) so we can 
    * define it's body and call it later *)
   let function_decls : (L.llvalue * sfunc_decl) StringMap.t =
@@ -155,6 +158,8 @@ let translate (globals, functions) =
       | SBoolLit b -> L.const_int i1_t (if b then 1 else 0)
       | SCharLit c -> L.const_int i8_t (Char.code c)
       | SNoexpr -> L.const_int i32_t 0
+      | SConbin e -> L.build_call conbin_func [| (expr builder e) |] "conbin" builder
+      | SConcat (e1, e2) -> L.build_call concat_func [| (expr builder e1) ; (expr builder e2) |] "concat" builder
       | SId s -> L.build_load (lookup s) s builder
       | SAssign (s, e) -> let e' = expr builder e in
                           let _  = L.build_store e' (lookup s) builder in e'

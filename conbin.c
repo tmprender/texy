@@ -21,7 +21,7 @@ char *conbin(char *s)
   // at the end of the return value
   char *binary = malloc(slen * CHAR_BIT + 1);
   if(binary == NULL){
-     fprintf(stderr,"malloc has failed in stringToBinary(%s): %s\n",s, strerror(errno));
+     fprintf(stderr,"malloc has failed in conbin(%s): %s\n",s, strerror(errno));
      return NULL;
   }
   // finally we can put our shortcut from above here
@@ -47,6 +47,25 @@ char *conbin(char *s)
   // reset pointer to beginning
   binary = start;
   return binary;
+}
+
+char *concat(char *a, char *b) {
+  if (a == NULL || b == NULL) {
+    // NULL might be 0 but you cannot be sure about it
+    return NULL;
+  }
+
+  errno = 0;
+  size_t len = strlen(a) + strlen(b);
+  char *c = malloc(len+1);
+  if(c == NULL){
+     fprintf(stderr,"malloc has failed in concat(%s.%s): %s\n",a,b, strerror(errno));
+     return NULL;
+  }  
+  c[len] = '\0';
+  c = strcat(c, a);
+  c = strcat(c, b);
+  return c;
 }
 
 /*

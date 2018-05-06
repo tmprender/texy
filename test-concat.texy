@@ -1,0 +1,12 @@
+int main()
+{
+  Word a;
+  Word b;
+  Word c;
+  a = "Hello";
+  b = "World";
+  c = a ^ " " ^ b;
+  printword(c);
+  free(c);
+  return 0;
+}

@@ -15,7 +15,9 @@ type expr =
   | WordLit of string
   | CharLit of char
   | BoolLit of bool
-	| ArrAcc of string * expr
+  | ArrAcc of string * expr
+  | Conbin of expr
+  | Concat of expr * expr
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
@@ -72,6 +74,8 @@ let rec string_of_expr = function
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
   | Id(s) -> s
+  | Conbin(e) -> "#" ^ string_of_expr e
+  | Concat(e1, e2) -> string_of_expr e1 ^ "+^" ^ string_of_expr e2
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
