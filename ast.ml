@@ -5,7 +5,7 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
 
 type uop = Neg | Not
 
-type typ = Int | Bool | Word | Char | Float | File | Void | Array of typ
+type typ = Int | Bool | Word | Char | Float | File | Void | Array of typ | Struct of string
 
 type bind = typ * string
 
@@ -24,6 +24,7 @@ type expr =
   | Assign of string * expr
   | Call of string * expr list
   | ArrayLit of expr list
+  | StructVar of expr * string
   | Noexpr
 
 type stmt =
@@ -42,7 +43,16 @@ type func_decl = {
     body : stmt list;
   }
 
-type program = bind list * func_decl list
+type struct_decl = {
+    sname: string;
+    vars: bind list;
+  }
+
+type program = {
+    var_decls: bind list;
+    struct_decls: struct_decl list;
+    func_decls: func_decl list;
+}
 
 
 (* Pretty-printing functions *)
@@ -84,6 +94,7 @@ let rec string_of_expr = function
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | ArrAcc(n, e) ->
       n ^ "[" ^ string_of_expr e ^ "]"
+  | StructVar(s, v) -> string_of_expr s ^ "." ^ v
   | Noexpr -> ""
 
 let rec string_of_stmt = function
@@ -108,8 +119,12 @@ let rec string_of_typ = function
   | File -> "file"
   | Void -> "void"
   | Array(t) -> string_of_typ t ^ "[]"
+  | Struct(s) -> "struct " ^ s
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
+
+let string_of_sdecl sdecl =
+  "struct " ^ sdecl.sname ^  " {\n" ^ String.concat "" (List.map string_of_vdecl sdecl.vars) ^ "};\n"
 
 
 let string_of_fdecl fdecl =
@@ -121,5 +136,7 @@ let string_of_fdecl fdecl =
   "}\n"
 
 let string_of_program (vars, funcs) =
-  String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
-  String.concat "\n" (List.map string_of_fdecl funcs)
+  String.concat "" (List.map string_of_sdecl program.struct_decls) ^ "\n"  ^
+  String.concat "\n" (List.map string_of_vdecl program.var_decls) ^ "\n" ^
+  String.concat "\n" (List.map string_of_fdecl program.func_decls)
+
