@@ -135,7 +135,7 @@ let string_of_fdecl fdecl =
   String.concat "" (List.map string_of_stmt fdecl.body) ^
   "}\n"
 
-let string_of_program (vars, funcs) =
+let string_of_program program =
   String.concat "" (List.map string_of_sdecl program.struct_decls) ^ "\n"  ^
   String.concat "\n" (List.map string_of_vdecl program.var_decls) ^ "\n" ^
   String.concat "\n" (List.map string_of_fdecl program.func_decls)
