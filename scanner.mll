@@ -30,8 +30,6 @@ rule token = parse
 | ">="     { GEQ }
 | "&&"     { AND }
 | "||"     { OR }
-| "#"      { CONBIN }  
-| "+^"     { CONCAT }
 | "!"      { NOT }
 | "if"     { IF }
 | "else"   { ELSE }

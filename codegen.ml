@@ -95,6 +95,9 @@ let translate (globals, functions) =
   let printbig_t = L.function_type i32_t [| i32_t |] in
   let printbig_func = L.declare_function "printbig" printbig_t the_module in
 
+  let conbin_t = L.function_type i8_pt [| i8_pt |] in
+  let conbin_func = L.declare_function "conbin" conbin_t the_module in
+
   (* Define each function (arguments and return type) so we can 
    * define it's body and call it later *)
   let function_decls : (L.llvalue * sfunc_decl) StringMap.t =
@@ -172,7 +175,6 @@ let translate (globals, functions) =
   | A.Geq     -> L.build_fcmp L.Fcmp.Oge
   | A.And | A.Or ->
       raise (Failure "internal error: semant should have rejected and/or on float")
-  | A.Concat -> raise (Failure "operator to be implmented")
   ) e1' e2' "tmp" builder 
   else (match op with
 	  | A.Add     -> L.build_add
@@ -187,7 +189,6 @@ let translate (globals, functions) =
 	  | A.Leq     -> L.build_icmp L.Icmp.Sle
 	  | A.Greater -> L.build_icmp L.Icmp.Sgt
     | A.Geq     -> L.build_icmp L.Icmp.Sge
-    | A.Concat -> raise (Failure "operator to be implmented")
 	  ) e1' e2' "tmp" builder
       | SUnop(op, e) ->
 	  let (t, _) = e in
@@ -195,7 +196,6 @@ let translate (globals, functions) =
 	  (match op with
     A.Neg when t = A.Float -> L.build_fneg 
   | A.Neg                  -> L.build_neg
-  | A.Conbin -> raise (Failure "operator to be implmented")
   | A.Not                  -> L.build_not) e' "tmp" builder
       | SCall ("print", [e]) | SCall ("printb", [e]) ->
 	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
@@ -204,20 +204,22 @@ let translate (globals, functions) =
 	  L.build_call printf_func [| float_format_str ; (expr builder e) |]
 	    "printf" builder
       | SCall ("printbig", [e]) ->
-	  L.build_call printbig_func [| (expr builder e) |] "printbig" builder
+    L.build_call printbig_func [| (expr builder e) |] "printbig" builder
+      | SCall ("conbin", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
+    L.build_call conbin_func (Array.of_list x) "conbin" builder
       | SCall ("printword", [e]) -> 
 	  L.build_call printf_func [| str_format_str ; (expr builder e) |]
       "printf" builder
       | SCall ("open", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
-      L.build_call open_func (Array.of_list x) "fopen" builder
+    L.build_call open_func (Array.of_list x) "fopen" builder
       | SCall ("close", [e]) -> 
     L.build_call close_func [| (expr builder e) |] "fclose" builder
       | SCall ("read", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
-      L.build_call read_func (Array.of_list x) "fread" builder
+    L.build_call read_func (Array.of_list x) "fread" builder
       | SCall ("write", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
-      L.build_call write_func (Array.of_list x) "fputs" builder
+    L.build_call write_func (Array.of_list x) "fputs" builder
       | SCall ("calloc", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
-      L.build_call calloc_func (Array.of_list x) "calloc" builder
+    L.build_call calloc_func (Array.of_list x) "calloc" builder
       | SCall ("free", [e]) -> 
 	  L.build_call free_func [| (expr builder e) |] "free" builder
       | SCall (f, args) ->

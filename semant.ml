@@ -61,6 +61,8 @@ let check (globals, functions) =
       ("calloc", {typ = Word; fname = "calloc"; locals = []; body = [];
       formals = [(Int,"x");(Int,"y")] });
       ("free", {typ = Void; fname = "free"; locals = []; body = [];
+      formals = [(Word,"x")] });
+      ("conbin", {typ = Word; fname = "conbin"; locals = []; body = [];
       formals = [(Word,"x")] })
     ]
 

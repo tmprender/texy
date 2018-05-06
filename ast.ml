@@ -1,9 +1,9 @@
 (* Abstract Syntax Tree and functions for printing it  - based off MicroC ast*)
 
 type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
-          And | Or | Concat
+          And | Or
 
-type uop = Neg | Not | Conbin
+type uop = Neg | Not
 
 type typ = Int | Bool | Word | Char | Float | File | Void | Array of typ
 
@@ -58,12 +58,10 @@ let string_of_op = function
   | Geq -> ">="
   | And -> "&&"
   | Or -> "||"
-  | Concat -> "+^"
 
 let string_of_uop = function
     Neg -> "-"
   | Not -> "!"
-  | Conbin -> "#"
 
 let rec string_of_expr = function
     Literal(l) -> string_of_int l
