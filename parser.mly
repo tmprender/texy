@@ -139,7 +139,7 @@ unary_expr:
   | CONBIN expr      { Conbin($2)             }
 
 assign_expr:
-    expr ASSIGN expr   { Assign($1, $3)         }
+    ID ASSIGN expr   { Assign($1, $3)         }
 
 expr:
     access_expr        { $1 }
