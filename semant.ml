@@ -246,4 +246,4 @@ let check program =
       | _ -> let err = "internal error: block didn't become a block?"
       in raise (Failure err)
     }
-  in (globals', List.map check_function functions)
+  in (globals', structs, List.map check_function functions)
