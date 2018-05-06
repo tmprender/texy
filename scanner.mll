@@ -21,6 +21,7 @@ rule token = parse
 | '='      { ASSIGN }
 | '['      { LBRACKET }
 | ']'      { RBRACKET }
+| '.'      { DOT }
 | '"'      { wordlit (Buffer.create 80) lexbuf }
 | "=="     { EQ }
 | "!="     { NEQ }
@@ -45,6 +46,7 @@ rule token = parse
 | "File"   { FILE }
 | "float"  { FLOAT }
 | "void"   { VOID }
+| "struct" { STRUCT }
 | "true"   { BLIT(true)  }
 | "false"  { BLIT(false) }
 | digits as lxm { LITERAL(int_of_string lxm) }
