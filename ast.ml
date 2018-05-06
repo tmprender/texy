@@ -48,11 +48,7 @@ type struct_decl = {
     vars: bind list;
   }
 
-type program = {
-    var_decls: bind list;
-    struct_decls: struct_decl list;
-    func_decls: func_decl list;
-}
+type program = bind list * struct_decl list * func_decl list
 
 
 (* Pretty-printing functions *)
@@ -135,8 +131,8 @@ let string_of_fdecl fdecl =
   String.concat "" (List.map string_of_stmt fdecl.body) ^
   "}\n"
 
-let string_of_program program =
-  String.concat "" (List.map string_of_sdecl program.struct_decls) ^ "\n"  ^
-  String.concat "\n" (List.map string_of_vdecl program.var_decls) ^ "\n" ^
-  String.concat "\n" (List.map string_of_fdecl program.func_decls)
+let string_of_program (vars, structs, funcs) =
+  String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
+  String.concat "\n" (List.map string_of_sdecl structs) ^ "\n" ^
+  String.concat "\n" (List.map string_of_fdecl funcs)
 
