@@ -63,6 +63,10 @@ let check (globals, functions) =
       ("free", {typ = Void; fname = "free"; locals = []; body = [];
       formals = [(Word,"x")] });
       ("conbin", {typ = Word; fname = "conbin"; locals = []; body = [];
+      formals = [(Word,"x")] });
+      ("bincon", {typ = Word; fname = "bincon"; locals = []; body = [];
+      formals = [(Word,"x")] });
+      ("bitflip", {typ = Word; fname = "bitflip"; locals = []; body = [];
       formals = [(Word,"x")] })
     ]
 
@@ -128,9 +132,15 @@ let check (globals, functions) =
           if ty1 != Word then raise(Failure("Can only concat words")) else
           if ty2 != Word then raise(Failure("Can only concat words"))
           else (Word, SConcat((expr e1), (expr e2)))
-      | Conbin e -> let (ty, _) = expr e in
-          if ty != Word then raise(Failure("Conbin can only be applied to words"))
-          else (Word, SConbin (expr e))      
+      | Conbin (e) -> let (ty, _) = expr e in
+          if ty != Word then raise(Failure("# can only be applied to words"))
+          else (Word, SConbin (expr e))
+      | Bincon (e) -> let (ty, _) = expr e in
+          if ty != Word then raise(Failure("# can only be applied to words"))
+          else (Word, SBincon (expr e)) 
+      | Bitflip e -> let (ty, _) = expr e in
+          if ty != Word then raise(Failure("#~ can only be applied to words"))
+          else (Word, SBitflip (expr e)) 
       | ArrAcc (s, e) -> let (ty,_) = expr e in
           if ty != Int then raise(Failure("Array index must be integer"))
           else let aty = type_of_identifier s in 

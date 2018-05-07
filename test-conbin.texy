@@ -7,7 +7,12 @@ int main()
   space = calloc(1,500);
   f = open("test-file.txt", "r");
   s = read(space, 1, 500, f);
+  printword(space);
   cy = #space;
+  printword(cy);
+  cy = #~cy;
+  printword(cy);
+  cy = #^#~cy;
   printword(cy);
   close(f);
   free(space);

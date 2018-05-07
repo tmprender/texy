@@ -17,6 +17,8 @@ type expr =
   | BoolLit of bool
   | ArrAcc of string * expr
   | Conbin of expr
+  | Bincon of expr
+  | Bitflip of expr
   | Concat of expr * expr
   | Id of string
   | Binop of expr * op * expr
@@ -75,6 +77,8 @@ let rec string_of_expr = function
   | BoolLit(false) -> "false"
   | Id(s) -> s
   | Conbin(e) -> "#" ^ string_of_expr e
+  | Bincon(e) ->  "#^" ^ string_of_expr e
+  | Bitflip(e) -> "#~" ^ string_of_expr e
   | Concat(e1, e2) -> string_of_expr e1 ^ "+^" ^ string_of_expr e2
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2

@@ -32,6 +32,8 @@ rule token = parse
 | "||"     { OR }
 | "!"      { NOT }
 | "#"      { CONBIN }
+| "#^"     { BINCON }
+| "#~"     { BITFLIP }
 | "^"      { CONCAT }
 | "if"     { IF }
 | "else"   { ELSE }

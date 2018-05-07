@@ -98,6 +98,12 @@ let translate (globals, functions) =
   let conbin_t = L.function_type i8_pt [| i8_pt |] in
   let conbin_func = L.declare_function "conbin" conbin_t the_module in
 
+  let bincon_t = L.function_type i8_pt [| i8_pt |] in
+  let bincon_func = L.declare_function "bincon" bincon_t the_module in
+
+  let bitflip_t = L.function_type i8_pt [| i8_pt |] in
+  let bitflip_func = L.declare_function "bitflip" bitflip_t the_module in
+
   let concat_t = L.function_type i8_pt [| i8_pt ; i8_pt |] in 
   let concat_func = L.declare_function "concat" concat_t the_module in
 
@@ -158,7 +164,9 @@ let translate (globals, functions) =
       | SBoolLit b -> L.const_int i1_t (if b then 1 else 0)
       | SCharLit c -> L.const_int i8_t (Char.code c)
       | SNoexpr -> L.const_int i32_t 0
-      | SConbin e -> L.build_call conbin_func [| (expr builder e) |] "conbin" builder
+      | SConbin (e) -> L.build_call conbin_func [| (expr builder e) |] "conbin" builder
+      | SBincon (e) -> L.build_call bincon_func [| (expr builder e) |] "bincon" builder
+      | SBitflip e -> L.build_call bitflip_func [| (expr builder e) |] "bitflip" builder
       | SConcat (e1, e2) -> L.build_call concat_func [| (expr builder e1) ; (expr builder e2) |] "concat" builder
       | SId s -> L.build_load (lookup s) s builder
       | SAssign (s, e) -> let e' = expr builder e in
@@ -212,6 +220,12 @@ let translate (globals, functions) =
     L.build_call printbig_func [| (expr builder e) |] "printbig" builder
       | SCall ("conbin", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
     L.build_call conbin_func (Array.of_list x) "conbin" builder
+      | SCall ("bincon", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
+    L.build_call bincon_func (Array.of_list x) "bincon" builder
+      | SCall ("bitflip", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
+    L.build_call bitflip_func (Array.of_list x) "bitflip" builder
+      | SCall ("concat", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
+    L.build_call concat_func (Array.of_list x) "concat" builder
       | SCall ("printword", [e]) -> 
 	  L.build_call printf_func [| str_format_str ; (expr builder e) |]
       "printf" builder

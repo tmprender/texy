@@ -3,10 +3,14 @@ int main()
   Word a;
   Word b;
   Word c;
-  a = "Hello";
-  b = "World";
-  c = a ^ " " ^ b;
+  Word d;
+  a = #"Hello ";
+  b = #"World";
+  c = a ^ b;
   printword(c);
+  d = #^c;
+  printword(d);
   free(c);
+  free(d);
   return 0;
 }

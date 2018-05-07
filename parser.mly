@@ -4,7 +4,8 @@
 open Ast
 %}
 
-%token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COMMA PLUS MINUS TIMES DIVIDE ASSIGN CONBIN CONCAT
+%token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COMMA PLUS MINUS TIMES DIVIDE ASSIGN 
+%token CONBIN BINCON BITFLIP CONCAT
 %token NOT EQ NEQ LT LEQ GT GEQ AND OR
 %token RETURN IF ELSE FOR WHILE INT BOOL FLOAT CHAR WORD FILE ARRAY VOID
 %token <int> LITERAL
@@ -19,6 +20,7 @@ open Ast
 
 %nonassoc NOELSE
 %nonassoc ELSE
+%right CONBIN BINCON BITFLIP
 %right ASSIGN
 %left OR
 %left AND
@@ -122,6 +124,8 @@ expr:
   | MINUS expr %prec NEG { Unop(Neg, $2)      }
   | NOT expr         { Unop(Not, $2)          }
   | CONBIN expr      { Conbin($2)             }
+  | BINCON expr      { Bincon($2)             }
+  | BITFLIP expr     { Bitflip($2)             }
   | expr CONCAT expr { Concat($1, $3)         }
   | ID ASSIGN expr   { Assign($1, $3)         }
   | ID LPAREN args_opt RPAREN { Call($1, $3)  }

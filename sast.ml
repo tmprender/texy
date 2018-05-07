@@ -10,6 +10,8 @@ and sx =
   | SCharLit of char
   | SBoolLit of bool
   | SConbin of sexpr
+  | SBincon of sexpr 
+  | SBitflip of sexpr
   | SConcat of sexpr * sexpr
 	| SArrAcc of string * sexpr
   | SId of string
@@ -49,6 +51,8 @@ let rec string_of_sexpr (t, e) =
   | SBoolLit(true) -> "true"
   | SBoolLit(false) -> "false"
   | SConbin(e) -> "#" ^ string_of_sexpr e
+  | SBincon(e) -> "#^" ^ string_of_sexpr e 
+  | SBitflip(e) -> "#~" ^ string_of_sexpr e
   | SConcat(e1, e2) -> string_of_sexpr e1 ^ "+^" ^ string_of_sexpr e2
   | SArrAcc(n, e) ->
       n ^ "[" ^ string_of_sexpr e ^ "]"
