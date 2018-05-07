@@ -34,13 +34,27 @@ let translate (globals, structs, functions) =
   and the_module = L.create_module context "TeXy" in
   let i8_pt   = L.pointer_type i8_t in
 
+  (* Make structs able to be declared and typed; based off of English's implementation from Fall '17 *)
+  let struct_table:(string, L.lltype) Hashtbl.t = Hashtbl.create 10
+  in 
+
+  let create_struct_type sdecl = 
+      let struct_t = L.named_struct_type context sdecl.ssname in
+        Hashtbl.add struct_table sdecl.ssname struct_t in 
+      let _  = List.map create_struct_type structs 
+  in
+
+  let lookup_struct_type sname = try Hashtbl.find struct_table sname
+    with Not_found -> raise(Failure("Struct " ^ sname ^ " not found"))
+in
+
   (* Convert MicroC types to LLVM types *)
   let ltype_of_typ = function
       A.Int   -> i32_t
     | A.Bool  -> i1_t
     | A.Float -> float_t
     | A.Void  -> void_t
-
+    | A.Struct s -> lookup_struct_type s
     | A.Word  -> i8_pt
     | A.Char -> i8_t
     | A.File -> i8_pt
@@ -53,6 +67,28 @@ let translate (globals, structs, functions) =
         | t -> raise (Failure ("Array of " ^ A.string_of_typ t ^ " not implemented yet"))
   in
 
+(* Struct declaration and hashtable population; based off of English's implementation from Fall '17  *)
+let make_struct_body sdecl =
+  let struct_typ = try Hashtbl.find struct_table sdecl.ssname
+    with Not_found -> raise(Failure("struct " ^ sdecl.ssname ^ " not defined")) in
+  let svar_types = List.map (fun (t, _) -> t) sdecl.svars in
+  let svar_lltypes = Array.of_list (List.map ltype_of_typ svar_types) in
+  L.struct_set_body struct_typ svar_lltypes true
+in  ignore(List.map make_struct_body structs);
+
+let struct_field_indices =
+  let handles m one_struct = 
+    let struct_field_names = List.map (fun (_, n) -> n) one_struct.svars in
+    let add_one n = n + 1 in
+    let add_fieldindex (m, i) field_name =
+      (StringMap.add field_name (add_one i) m, add_one i) in
+    let struct_field_map = 
+      List.fold_left add_fieldindex (StringMap.empty, -1) struct_field_names
+    in
+    StringMap.add one_struct.ssname (fst struct_field_map) m  
+  in
+  List.fold_left handles StringMap.empty structs 
+in
 
   (* Declare each global variable; remember its value in a map *)
   let global_vars : L.llvalue StringMap.t =
@@ -112,6 +148,10 @@ let translate (globals, structs, functions) =
       StringMap.add name (L.define_function name ftype the_module, fdecl) m in
     List.fold_left function_decl StringMap.empty functions in
   
+
+    (* Return the address of the expr *)
+  let addr_of_expr expr builder ((_, e) : sexpr) = match expr with
+    A.Id(id) -> (lookup e id) 
   (* Fill in the body of the given function *)
   let build_function_body fdecl =
     let (the_function, _) = StringMap.find fdecl.sfname function_decls in
@@ -150,6 +190,29 @@ let translate (globals, structs, functions) =
                    with Not_found -> StringMap.find n global_vars
     in
 
+    (* Return the address of the expr *)
+  let addr_of_expr expr builder = match expr with
+      SId(id) -> (lookup id)
+    | SStructVar(e, var) -> 
+       (match e1 with
+      SId s -> let etype = fst( 
+        let fdecl_locals = List.map (t, n) fdecl.slocals in
+        try List.find (fun n -> snd(n) = s) fdecl_locals
+        with Not_found -> raise (Failure("Unable to find" ^ s )))
+        in
+        (try match etype with
+          A.Struct t->
+            let index_number_list = StringMap.find t struct_field_indices in
+            let index_number = StringMap.find field index_number_list in
+            let struct_llvalue = lookup s in
+            let access_llvalue = L.build_struct_gep struct_llvalue index_number "tmp" builder in
+            access_llvalue
+        | _ -> raise (Failure("not found"))
+       with Not_found -> raise (Failure("not found" ^ s)))
+       | _ -> raise (Failure("lhs not found")))
+   | _ -> raise (Failure("addr not found"))
+
+  in
     (* Construct code for an expression; return its value *)
     let rec expr builder ((_, e) : sexpr) = match e with
         SLiteral i -> L.const_int i32_t i
@@ -161,8 +224,16 @@ let translate (globals, structs, functions) =
       | SConbin e -> L.build_call conbin_func [| (expr builder e) |] "conbin" builder
       | SConcat (e1, e2) -> L.build_call concat_func [| (expr builder e1) ; (expr builder e2) |] "concat" builder
       | SId s -> L.build_load (lookup s) s builder
-      | SAssign (s, e) -> let e' = expr builder e in
-                          let _  = L.build_store e' (lookup s) builder in e'
+      | SAssign (e1, e2) -> let l_val = (addr_of_expr e1 builder) in
+      let e2' = expr builder e2 in
+       ignore (L.build_store e2' l_val builder); e2'
+      | SStructVar (e, var) -> let llvalue = (addr_of_expr e builder) in 
+      let built_e = expr builder e in
+      let built_e_lltype = L.type_of built_e in
+      let built_e_opt = L.struct_name built_e_lltype in
+      let built_e_name = (match built_e_opt with 
+                                  | None -> ""
+                                  | Some(s) -> s)    
       | SBinop (e1, op, e2) ->
 	  let (t, _) = e1
 	  and e1' = expr builder e1
