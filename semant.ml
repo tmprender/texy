@@ -192,8 +192,10 @@ let check program =
                     fst (List.find (fun b -> snd b = var) stype.vars)
                   with Not_found ->
                     raise (Failure ("struct "^s^ " does not contain " ^ 
-                      var ^ " in " ^ string_of_expr str)))), 
-          (SStructVar(e', var))
+                      var ^ " in " ^ string_of_expr str)))
+            | _ -> raise (Failure ("illegal struct access of type " ^ 
+              string_of_typ typ ^ " in " ^ string_of_expr str))
+          ), (SStructVar(e', var))
       | Id s       -> (type_of_identifier s, SId s)
       | Assign(var, e) as ex -> 
           let lt = type_of_identifier var
