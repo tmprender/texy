@@ -66,7 +66,7 @@ let rec string_of_sexpr (t, e) =
   | SCall(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_sexpr el) ^ ")"
   | SArrayLit(arr) -> "[" ^ String.concat ", " (List.map string_of_sexpr arr) ^ "]"
-  | SStructVar(s, v) -> string_of_expr s ^ "." ^ v
+  | SStructVar(s, v) -> string_of_sexpr s ^ "." ^ v
   | SNoexpr -> ""
 				  ) ^ ")"				     
 
