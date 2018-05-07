@@ -96,6 +96,12 @@ let check program =
       ("free", {typ = Void; fname = "free"; locals = []; body = [];
       formals = [(Word,"x")] });
       ("conbin", {typ = Word; fname = "conbin"; locals = []; body = [];
+      formals = [(Word,"x")] });
+      ("concat", {typ = Word; fname = "concat"; locals = []; body = [];
+      formals = [(Word,"x"); (Word, "y")] });      
+      ("bincon", {typ = Word; fname = "bincon"; locals = []; body = [];
+      formals = [(Word,"x")] });
+      ("bitflip", {typ = Word; fname = "bitflip"; locals = []; body = [];
       formals = [(Word,"x")] })
     ]
 
@@ -163,7 +169,13 @@ let check program =
           else (Word, SConcat((expr e1), (expr e2)))
       | Conbin e -> let (ty, _) = expr e in
           if ty != Word then raise(Failure("Conbin can only be applied to words"))
-          else (Word, SConbin (expr e))      
+          else (Word, SConbin (expr e))
+      | Bincon (e) -> let (ty, _) = expr e in
+          if ty != Word then raise(Failure("# can only be applied to words"))
+          else (Word, SBincon (expr e)) 
+      | Bitflip e -> let (ty, _) = expr e in
+          if ty != Word then raise(Failure("#~ can only be applied to words"))
+          else (Word, SBitflip (expr e)) 
       | ArrAcc (s, e) -> let (ty,_) = expr e in
           if ty != Int then raise(Failure("Array index must be integer"))
           else let aty = type_of_identifier s in 
@@ -248,6 +260,18 @@ let check program =
             in let _ = List.fold_left chk_arr_elem [] (List.sort compare ty_arr) in
           let (aty,_) = List.hd ty_arr in
           (Array(aty), SArrayLit(ty_arr))
+      | ArrayAssign (v,i,e) -> let (ty,_) = expr i in
+          if ty != Int then raise(Failure("Array index must be integer"))
+          else let arrty = type_of_identifier v in 
+          let lt = match arrty with
+          Array(Int)    -> Int
+        | Array(Float)  -> Float
+        | Array(Word) -> Word
+        | Array(Bool)   -> Bool
+        | _	-> raise(Failure (v^" is not a valid array ID")) in
+          let (rt,_) = expr e in
+          if lt != rt then raise(Failure("Assigning type mismatches Array type"))
+          else (lt, SArrayAssign(v, expr i, expr e))
 
     in
 

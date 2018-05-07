@@ -33,7 +33,10 @@ rule token = parse
 | "||"     { OR }
 | "!"      { NOT }
 | "#"      { CONBIN }
+| "%"     { BINCON }
+| "~"     { BITFLIP }
 | "^"      { CONCAT }
+| "@"      { AT }
 | "if"     { IF }
 | "else"   { ELSE }
 | "for"    { FOR }

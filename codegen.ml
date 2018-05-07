@@ -134,6 +134,12 @@ in
   let conbin_t = L.function_type i8_pt [| i8_pt |] in
   let conbin_func = L.declare_function "conbin" conbin_t the_module in
 
+  let bincon_t = L.function_type i8_pt [| i8_pt |] in
+  let bincon_func = L.declare_function "bincon" bincon_t the_module in
+
+  let bitflip_t = L.function_type i8_pt [| i8_pt |] in
+  let bitflip_func = L.declare_function "bitflip" bitflip_t the_module in
+
   let concat_t = L.function_type i8_pt [| i8_pt ; i8_pt |] in 
   let concat_func = L.declare_function "concat" concat_t the_module in
 
@@ -218,6 +224,8 @@ in
       | SCharLit c -> L.const_int i8_t (Char.code c)
       | SNoexpr -> L.const_int i32_t 0
       | SConbin e -> L.build_call conbin_func [| (expr builder e) |] "conbin" builder
+      | SBincon (e) -> L.build_call bincon_func [| (expr builder e) |] "bincon" builder
+      | SBitflip e -> L.build_call bitflip_func [| (expr builder e) |] "bitflip" builder
       | SConcat (e1, e2) -> L.build_call concat_func [| (expr builder e1) ; (expr builder e2) |] "concat" builder
       | SId s -> L.build_load (lookup s) s builder
       | SAssign (e1, e2) -> let l_val = (addr_of_expr (snd(e1)) builder) in
@@ -283,6 +291,12 @@ in
     L.build_call printbig_func [| (expr builder e) |] "printbig" builder
       | SCall ("conbin", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
     L.build_call conbin_func (Array.of_list x) "conbin" builder
+      | SCall ("bincon", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
+    L.build_call bincon_func (Array.of_list x) "bincon" builder
+      | SCall ("bitflip", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
+    L.build_call bitflip_func (Array.of_list x) "bitflip" builder
+      | SCall ("concat", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
+    L.build_call concat_func (Array.of_list x) "concat" builder
       | SCall ("printword", [e]) -> 
 	  L.build_call printf_func [| str_format_str ; (expr builder e) |]
       "printf" builder
@@ -305,14 +319,15 @@ in
                         A.Void -> ""
                       | _ -> f ^ "_result") in
          L.build_call fdef (Array.of_list llargs) result builder
-      | SArrAcc (s, e) ->
-          let idx = expr builder e in
-          let arr = lookup s in
-          let arr = L.build_load arr "" builder in
-          let s' = L.build_gep arr [| idx |] "" builder in
-          let s' = L.build_load s' "" builder in
-          s' 
-
+      | SArrAcc (s, e) -> let idx = expr builder e in
+         let arr = L.build_load (lookup s) "" builder in
+         let s' = L.build_gep arr [| idx |] "" builder in
+         let s' = L.build_load s' "" builder in s'
+      | SArrayAssign(v,i,e) -> let e' = expr builder e in
+              let i' = expr builder i in
+              let v' = L.build_load (lookup v) "" builder in
+              let ptr = L.build_gep v' [| i' |] "" builder in
+              let r = L.build_store e' ptr builder in r
       | SArrayLit sel ->
           let al = List.map (expr builder) sel in
           let ty = L.type_of (List.hd al) in
