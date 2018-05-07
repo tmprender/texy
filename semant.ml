@@ -51,6 +51,12 @@ let check program =
   let struct_decls = List.fold_left add_struct structs
   in
 
+  (* Return struct from symbol table *)
+  let find_struct s = 
+    try StringMap.find s struct_decls
+    with Not_found -> raise (Failure ("unrecognized struct " ^ s))
+  in
+
   (**** Checking Functions ****)
 
 
