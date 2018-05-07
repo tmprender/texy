@@ -190,11 +190,11 @@ in
   let addr_of_expr expr builder = match expr with
       SId(id) -> (lookup id)
     | SStructVar(e, var) -> 
-       (match e with
-        _, SId s -> let etype = fst( 
+       (match snd(e) with
+        SId s -> let etype = fst( 
         let fdecl_locals = List.map (fun (t, n) -> (t, n) ) fdecl.slocals in
         try List.find (fun n -> snd(n) = s) fdecl_locals
-        with Not_found -> raise (Failure("Unable to find" ^ s )))
+        with Not_found -> raise (Failure("Unable to find " ^ s )))
         in
         (try match etype with
           A.Struct t->
