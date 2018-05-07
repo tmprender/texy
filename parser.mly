@@ -20,7 +20,6 @@ open Ast
 
 %nonassoc NOELSE
 %nonassoc ELSE
-%right CONBIN BINCON BITFLIP
 %right ASSIGN
 %left OR
 %left AND

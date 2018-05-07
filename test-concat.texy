@@ -8,7 +8,7 @@ int main()
   b = #"World";
   c = a ^ b;
   printword(c);
-  d = #^c;
+  d = %c;
   printword(d);
   free(c);
   free(d);

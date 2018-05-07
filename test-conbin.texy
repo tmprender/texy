@@ -10,9 +10,9 @@ int main()
   printword(space);
   cy = #space;
   printword(cy);
-  cy = #~cy;
+  cy = ~cy;
   printword(cy);
-  cy = #^#~cy;
+  cy = %~cy;
   printword(cy);
   close(f);
   free(space);
