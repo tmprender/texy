@@ -59,11 +59,7 @@ let check program =
   (* Checking the specifics of the struct *)
   let check_struct struc =
     let vars' = check_binds "local" struc.vars in
-
-    (* Build local symbol table of variables for this struct *)
-    let struct_symbols = List.fold_left (fun m (ty, name) -> StringMap.add name ty m)
-                  StringMap.empty (vars')
-    in
+    
     (* body of check_struct *)
     { ssname = struc.sname;
       svars = vars';
