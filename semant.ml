@@ -185,13 +185,13 @@ let check program =
       | StructVar(e, var) as str ->
           let e' = find_struct e in
           let typ = fst e' in
-          match typ with
+          (match typ with
               Struct s ->
                   let stype = StringMap.find s struct_decls in
                   (try
                     fst (List.find (fun b -> snd b = var) stype.members)
                   with Not_found ->
-                    raise (Failure ("struct "^s^ " does not contain " ^ var ^ string_of_expr str))) in
+                    raise (Failure ("struct "^s^ " does not contain " ^ var ^ string_of_expr str)))) in
           (SStructVar(e', var))
       | Id s       -> (type_of_identifier s, SId s)
       | Assign(var, e) as ex -> 
