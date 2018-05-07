@@ -60,12 +60,8 @@ let check program =
   let check_struct struc =
     let vars' = check_binds "local" struc.vars in
 
-    let check_assign lvaluet rvaluet err =
-       if lvaluet = rvaluet then lvaluet else raise (Failure err)
-    in   
-
     (* Build local symbol table of variables for this struct *)
-    let symbols = List.fold_left (fun m (ty, name) -> StringMap.add name ty m)
+    let struct_symbols = List.fold_left (fun m (ty, name) -> StringMap.add name ty m)
                   StringMap.empty (vars')
     in
     (* body of check_struct *)
