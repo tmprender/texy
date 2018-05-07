@@ -153,11 +153,11 @@ let check (globals, functions) =
            (accty, SArrAcc(s, expr e))
       | Id s       -> (type_of_identifier s, SId s)
       | Assign(var, e) as ex -> 
-          let lt = type_of_identifier var
-          and (rt, e') = expr e in
-          let err = "illegal assignment " ^ string_of_typ lt ^ " = " ^ 
-            string_of_typ rt ^ " in " ^ string_of_expr ex
-          in (check_assign lt rt err, SAssign(var, (rt, e')))
+      let lt = type_of_identifier var
+      and (rt, e') = expr e in
+      let err = "illegal assignment " ^ string_of_typ lt ^ " = " ^ 
+        string_of_typ rt ^ " in " ^ string_of_expr ex
+      in (check_assign lt rt err, SAssign(var, (rt, e')))
       | Unop(op, e) as ex -> 
           let (t, e') = expr e in
           let ty = match op with
@@ -211,6 +211,18 @@ let check (globals, functions) =
             in let _ = List.fold_left chk_arr_elem [] (List.sort compare ty_arr) in
           let (aty,_) = List.hd ty_arr in
           (Array(aty), SArrayLit(ty_arr))
+      | ArrayAssign (v,i,e) -> let (ty,_) = expr i in
+          if ty != Int then raise(Failure("Array index must be integer"))
+          else let arrty = type_of_identifier v in 
+          let lt = match arrty with
+          Array(Int)    -> Int
+        | Array(Float)  -> Float
+        | Array(Word) -> Word
+        | Array(Bool)   -> Bool
+        | _	-> raise(Failure (v^" is not a valid array ID")) in
+          let (rt,_) = expr e in
+          if lt != rt then raise(Failure("Assigning type mismatches Array type"))
+          else (lt, SArrayAssign(v, expr i, expr e))
     in
 
     let check_bool_expr e = 

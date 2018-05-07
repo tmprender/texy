@@ -24,6 +24,7 @@ type expr =
   | Binop of expr * op * expr
   | Unop of uop * expr
   | Assign of string * expr
+  | ArrayAssign of string * expr * expr
   | Call of string * expr list
   | ArrayLit of expr list
   | Noexpr
@@ -77,13 +78,14 @@ let rec string_of_expr = function
   | BoolLit(false) -> "false"
   | Id(s) -> s
   | Conbin(e) -> "#" ^ string_of_expr e
-  | Bincon(e) ->  "#^" ^ string_of_expr e
-  | Bitflip(e) -> "#~" ^ string_of_expr e
-  | Concat(e1, e2) -> string_of_expr e1 ^ "+^" ^ string_of_expr e2
+  | Bincon(e) ->  "%" ^ string_of_expr e
+  | Bitflip(e) -> "~" ^ string_of_expr e
+  | Concat(e1, e2) -> string_of_expr e1 ^ "^" ^ string_of_expr e2
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
+  | ArrayAssign(v,i,e) -> v ^ string_of_expr i ^ "=" ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | ArrAcc(n, e) ->

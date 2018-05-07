@@ -248,14 +248,15 @@ let translate (globals, functions) =
                         A.Void -> ""
                       | _ -> f ^ "_result") in
          L.build_call fdef (Array.of_list llargs) result builder
-      | SArrAcc (s, e) ->
-          let idx = expr builder e in
-          let arr = lookup s in
-          let arr = L.build_load arr "" builder in
-          let s' = L.build_gep arr [| idx |] "" builder in
-          let s' = L.build_load s' "" builder in
-          s' 
-
+      | SArrAcc (s, e) -> let idx = expr builder e in
+                          let arr = L.build_load (lookup s) "" builder in
+                          let s' = L.build_gep arr [| idx |] "" builder in
+                          let s' = L.build_load s' "" builder in s'
+      | SArrayAssign(v,i,e) -> let e' = expr builder e in
+                               let i' = expr builder i in
+                               let v' = L.build_load (lookup v) "" builder in
+                               let ptr = L.build_gep v' [| i' |] "" builder in
+                               let r = L.build_store e' ptr builder in r
       | SArrayLit sel ->
           let al = List.map (expr builder) sel in
           let ty = L.type_of (List.hd al) in
