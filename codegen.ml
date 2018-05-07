@@ -187,7 +187,7 @@ in
     in
 
     (* Return the address of the expr; based off of English's implementation from Fall '17 *)
-  let addr_of_expr expr builder = match expr with
+  let addr_of_expr sx builder = match sx with
       SId(id) -> (lookup id)
     | SStructVar(e, var) -> 
        (match snd(e) with
@@ -220,10 +220,10 @@ in
       | SConbin e -> L.build_call conbin_func [| (expr builder e) |] "conbin" builder
       | SConcat (e1, e2) -> L.build_call concat_func [| (expr builder e1) ; (expr builder e2) |] "concat" builder
       | SId s -> L.build_load (lookup s) s builder
-      | SAssign (e1, e2) -> let l_val = (addr_of_expr e1 builder) in
+      | SAssign (e1, e2) -> let l_val = (addr_of_expr (snd(e1)) builder) in
       let e2' = expr builder e2 in
        ignore (L.build_store e2' l_val builder); e2'
-      | SStructVar (e, var) -> let llvalue = (addr_of_expr e builder) in 
+      | SStructVar (e, var) -> let llvalue = (addr_of_expr (snd(e)) builder) in 
           let built_e = expr builder e in
           let built_e_lltype = L.type_of built_e in
           let built_e_opt = L.struct_name built_e_lltype in
@@ -231,7 +231,7 @@ in
                                   | None -> ""
                                   | Some(s) -> s) in
           let indices = StringMap.find built_e_name struct_field_indices in
-          let index = StringMap.find field indices in
+          let index = StringMap.find var indices in
           let access_llvalue = L.build_struct_gep llvalue index "tmp" builder in
                                L.build_load access_llvalue "tmp" builder
       | SBinop (e1, op, e2) ->
