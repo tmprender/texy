@@ -224,12 +224,16 @@ in
       let e2' = expr builder e2 in
        ignore (L.build_store e2' l_val builder); e2'
       | SStructVar (e, var) -> let llvalue = (addr_of_expr e builder) in 
-      let built_e = expr builder e in
-      let built_e_lltype = L.type_of built_e in
-      let built_e_opt = L.struct_name built_e_lltype in
-      let built_e_name = (match built_e_opt with 
+          let built_e = expr builder e in
+          let built_e_lltype = L.type_of built_e in
+          let built_e_opt = L.struct_name built_e_lltype in
+          let built_e_name = (match built_e_opt with 
                                   | None -> ""
-                                  | Some(s) -> s)    
+                                  | Some(s) -> s) in
+          let indices = StringMap.find built_e_name struct_field_indices in
+          let index = StringMap.find field indices in
+          let access_llvalue = L.build_struct_gep llvalue index "tmp" builder in
+                               L.build_load access_llvalue "tmp" builder
       | SBinop (e1, op, e2) ->
 	  let (t, _) = e1
 	  and e1' = expr builder e1
