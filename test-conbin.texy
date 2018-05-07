@@ -1,0 +1,16 @@
+int main()
+{
+  File f;
+  Word cy;
+  Word space;
+  int s;
+  space = calloc(1,500);
+  f = open("test-file.txt", "r");
+  s = read(space, 1, 500, f);
+  cy = #space;
+  printword(cy);
+  close(f);
+  free(space);
+  free(cy);
+  return 0;
+}

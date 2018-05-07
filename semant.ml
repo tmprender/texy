@@ -10,7 +10,10 @@ module StringMap = Map.Make(String)
 
    Check each global variable, then check each function *)
 
-let check (globals, functions) =
+let check program =
+  let globals = program.var_decls in
+  let functions = program.func_decls in
+  let structs = program.struct_decls in
 
   (* Check if a certain kind of binding has void type or is a duplicate
      of another, previously checked binding *)
@@ -33,19 +36,75 @@ let check (globals, functions) =
 
   let globals' = check_binds "global" globals in
 
+  (**** Checking Structs ****)
+
+  let add_struct map sd = 
+    let dup_err = "duplicate struct " ^ sd.sname
+    and make_err er = raise (Failure er)
+    and n = sd.sname (* Name of the struct *)
+    in match sd with (* No duplicate structs *)
+       | _ when StringMap.mem n map -> make_err dup_err  
+       | _ ->  StringMap.add n sd map 
+  in
+
+  let struct_decls = List.fold_left add_struct StringMap.empty structs
+  in
+
+  (* Return struct from symbol table *)
+  let find_struct s = 
+    try StringMap.find s struct_decls
+    with Not_found -> raise (Failure ("unrecognized struct " ^ s))
+  in
+
+  (* Checking the specifics of the struct *)
+  let check_struct struc =
+    let vars' = check_binds "local" struc.vars in
+    
+    (* body of check_struct *)
+    { ssname = struc.sname;
+      svars = vars';
+    }
+  in
+
   (**** Checking Functions ****)
 
 
   (* Collect function declarations for built-in functions: no bodies *)
   let built_in_decls = 
-    let add_bind map (name, ty) = StringMap.add name {
-      typ = Void; fname = name; 
-      formals = [(ty, "x")];
-      locals = []; body = [] } map
-    in List.fold_left add_bind StringMap.empty [ ("print", Int);
-			                         ("printb", Bool);
-			                         ("printf", Float);
-			                         ("printbig", Int) ]
+    let add_bind map (name, ty) = StringMap.add name ty map
+    in List.fold_left add_bind StringMap.empty 
+    [ ("print", {typ = Void; fname = "print"; locals = []; body = [];
+      formals = [(Int, "x")] });
+      ("printb", {typ = Void; fname = "printb"; locals = []; body = [];
+      formals = [(Bool, "x")] });
+      ("printf", {typ = Void; fname = "printf"; locals = []; body = [];
+      formals = [(Float, "x")] });
+      ("printword", {typ = Void; fname = "printword"; locals = []; body = [];
+      formals = [(Word, "x")] });
+      ("printbig", {typ = Void; fname = "printbig"; locals = []; body = [];
+      formals = [(Int, "x")] });
+      ("open", {typ = File; fname = "open"; locals = []; body = [];
+      formals = [(Word,"x"); (Word,"y")] }); 
+      ("close", {typ = Int; fname = "close"; locals = []; body = [];
+      formals = [(File,"x")] });
+      ("read", {typ = Int; fname = "read"; locals = []; body = [];
+      formals = [(Word,"x");(Int,"y");(Int,"z");(File,"w")] });
+      ("write", {typ = Int; fname = "write"; locals = []; body = [];
+      formals = [(Word,"x");(File,"y")] });
+      ("calloc", {typ = Word; fname = "calloc"; locals = []; body = [];
+      formals = [(Int,"x");(Int,"y")] });
+      ("free", {typ = Void; fname = "free"; locals = []; body = [];
+      formals = [(Word,"x")] });
+      ("conbin", {typ = Word; fname = "conbin"; locals = []; body = [];
+      formals = [(Word,"x")] });
+      ("concat", {typ = Word; fname = "concat"; locals = []; body = [];
+      formals = [(Word,"x"); (Word, "y")] });      
+      ("bincon", {typ = Word; fname = "bincon"; locals = []; body = [];
+      formals = [(Word,"x")] });
+      ("bitflip", {typ = Word; fname = "bitflip"; locals = []; body = [];
+      formals = [(Word,"x")] })
+    ]
+
   in
 
   (* Add function name to symbol table *)
@@ -97,17 +156,57 @@ let check (globals, functions) =
 
     (* Return a semantically-checked expression, i.e., with a type *)
     let rec expr = function
-        Literal  l -> (Int, SLiteral l)
+        Literal l -> (Int, SLiteral l)
       | Fliteral l -> (Float, SFliteral l)
+      | WordLit l -> (Word, SWordLit l)
+      | CharLit l -> (Char, SCharLit l)
       | BoolLit l  -> (Bool, SBoolLit l)
       | Noexpr     -> (Void, SNoexpr)
+      | Concat (e1, e2) -> let (ty1, _) = expr e1 in
+          let (ty2, _) = expr e2 in
+          if ty1 != Word then raise(Failure("Can only concat words")) else
+          if ty2 != Word then raise(Failure("Can only concat words"))
+          else (Word, SConcat((expr e1), (expr e2)))
+      | Conbin e -> let (ty, _) = expr e in
+          if ty != Word then raise(Failure("Conbin can only be applied to words"))
+          else (Word, SConbin (expr e))
+      | Bincon (e) -> let (ty, _) = expr e in
+          if ty != Word then raise(Failure("# can only be applied to words"))
+          else (Word, SBincon (expr e)) 
+      | Bitflip e -> let (ty, _) = expr e in
+          if ty != Word then raise(Failure("#~ can only be applied to words"))
+          else (Word, SBitflip (expr e)) 
+      | ArrAcc (s, e) -> let (ty,_) = expr e in
+          if ty != Int then raise(Failure("Array index must be integer"))
+          else let aty = type_of_identifier s in 
+          let accty = match aty with
+          Array(Int)    -> Int
+        | Array(Float)  -> Float
+        | Array(Word) -> Word
+        | Array(Bool)   -> Bool
+        | _	-> raise(Failure (s^" is not a valid array ID")) in
+           (accty, SArrAcc(s, expr e))
+      | StructVar(e, var) as str ->
+          let e' = expr e in
+          let typ = fst e' in
+          (match typ with
+              Struct s ->
+                  let stype = find_struct s in
+                  (try
+                    fst (List.find (fun b -> snd b = var) stype.vars)
+                  with Not_found ->
+                    raise (Failure ("struct "^s^ " does not contain " ^ 
+                      var ^ " in " ^ string_of_expr str)))
+            | _ -> raise (Failure ("illegal struct access of type " ^ 
+              string_of_typ typ ^ " in " ^ string_of_expr str))
+          ), (SStructVar(e', var))
       | Id s       -> (type_of_identifier s, SId s)
       | Assign(var, e) as ex -> 
-          let lt = type_of_identifier var
+          let (lt, var') = expr var
           and (rt, e') = expr e in
           let err = "illegal assignment " ^ string_of_typ lt ^ " = " ^ 
             string_of_typ rt ^ " in " ^ string_of_expr ex
-          in (check_assign lt rt err, SAssign(var, (rt, e')))
+          in (check_assign lt rt err, SAssign((lt, var'), (rt, e')))
       | Unop(op, e) as ex -> 
           let (t, e') = expr e in
           let ty = match op with
@@ -149,6 +248,31 @@ let check (globals, functions) =
           in 
           let args' = List.map2 check_call fd.formals args
           in (fd.typ, SCall(fname, args'))
+      | ArrayLit l ->
+          let ty_arr = List.map expr l in
+          let chk_arr_elem chked elem = 
+        (* check if the elements in an array literal are of the same type *)
+          let ty_err = "Array elements must be the same type" in
+            match elem with 
+              (arrt1, _) -> match chked with 
+                  ((arrt2, _) :: _) when arrt1 != arrt2 -> raise (Failure ty_err)
+                | _ -> elem :: chked
+            in let _ = List.fold_left chk_arr_elem [] (List.sort compare ty_arr) in
+          let (aty,_) = List.hd ty_arr in
+          (Array(aty), SArrayLit(ty_arr))
+      | ArrayAssign (v,i,e) -> let (ty,_) = expr i in
+          if ty != Int then raise(Failure("Array index must be integer"))
+          else let arrty = type_of_identifier v in 
+          let lt = match arrty with
+          Array(Int)    -> Int
+        | Array(Float)  -> Float
+        | Array(Word) -> Word
+        | Array(Bool)   -> Bool
+        | _	-> raise(Failure (v^" is not a valid array ID")) in
+          let (rt,_) = expr e in
+          if lt != rt then raise(Failure("Assigning type mismatches Array type"))
+          else (lt, SArrayAssign(v, expr i, expr e))
+
     in
 
     let check_bool_expr e = 
@@ -191,4 +315,4 @@ let check (globals, functions) =
       | _ -> let err = "internal error: block didn't become a block?"
       in raise (Failure err)
     }
-  in (globals', List.map check_function functions)
+  in (globals', List.map check_struct structs, List.map check_function functions)

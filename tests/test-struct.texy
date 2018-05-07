@@ -1,0 +1,11 @@
+struct myStruct {
+  int a;
+  int b;
+};
+
+int main() {
+  struct myStruct one;
+  one.a = 5;
+  print(one.a);
+  return 0;
+}
