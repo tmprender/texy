@@ -56,6 +56,28 @@ let check program =
     with Not_found -> raise (Failure ("unrecognized struct " ^ s))
   in
 
+  (* Checking the specifics of the struct *)
+  let check_struct struc =
+    let vars' = check_binds "local" struc.vars in
+
+    let check_assign lvaluet rvaluet err =
+       if lvaluet = rvaluet then lvaluet else raise (Failure err)
+    in   
+
+    (* Build local symbol table of variables for this struct *)
+    let symbols = List.fold_left (fun m (ty, name) -> StringMap.add name ty m)
+                  StringMap.empty (vars')
+    in
+    (* Return a variable from our local symbol table *)
+    let type_of_identifier s =
+      try StringMap.find s symbols
+      with Not_found -> raise (Failure ("undeclared identifier " ^ s))
+    in
+    (* body of check_struct *)
+    { ssname = struc.sname;
+      svars = vars';
+    }
+
   (**** Checking Functions ****)
 
 
@@ -267,4 +289,4 @@ let check program =
       | _ -> let err = "internal error: block didn't become a block?"
       in raise (Failure err)
     }
-  in (globals', structs, List.map check_function functions)
+  in (globals', List.map check_struct structs, List.map check_function functions)
