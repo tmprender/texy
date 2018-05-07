@@ -191,10 +191,10 @@ let check program =
       | Id s       -> (type_of_identifier s, SId s)
       | Assign(var, e) as ex -> 
           let lt = expr var
-          and (rt, e') = expr e in
-          let err = "illegal assignment " ^ string_of_sexpr lt ^ " = " ^ 
+          and rt = expr e in
+          let err = "illegal assignment " ^ string_of_typ lt ^ " = " ^ 
             string_of_typ rt ^ " in " ^ string_of_expr ex
-          in (check_assign var e err, SAssign(lt, (rt, e')))
+          in (check_assign lt rt err, SAssign(lt, rt))
       | Unop(op, e) as ex -> 
           let (t, e') = expr e in
           let ty = match op with
