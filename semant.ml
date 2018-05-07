@@ -190,8 +190,7 @@ let check program =
           ), (SStructVar(e', var))
       | Id s       -> (type_of_identifier s, SId s)
       | Assign(var, e) as ex -> 
-          let var' = expr var in
-          let lt = type_of_identifier var'
+          let lt = expr var
           and (rt, e') = expr e in
           let err = "illegal assignment " ^ string_of_typ lt ^ " = " ^ 
             string_of_typ rt ^ " in " ^ string_of_expr ex
