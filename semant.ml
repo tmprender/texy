@@ -190,11 +190,11 @@ let check program =
           ), (SStructVar(e', var))
       | Id s       -> (type_of_identifier s, SId s)
       | Assign(var, e) as ex -> 
-          let lt = expr var
-          and rt = expr e in
-          let err = "illegal assignment " ^ string_of_sexpr lt ^ " = " ^ 
-            string_of_sexpr rt ^ " in " ^ string_of_expr ex
-          in (check_assign lt rt err, SAssign(lt, rt))
+          let (lt, var') = expr var
+          and (rt, e') = expr e in
+          let err = "illegal assignment " ^ string_of_expr var ^ " = " ^ 
+            string_of_expr e ^ " in " ^ string_of_expr ex
+          in (check_assign lt rt err, SAssign((lt, var'), (rt, e')))
       | Unop(op, e) as ex -> 
           let (t, e') = expr e in
           let ty = match op with
