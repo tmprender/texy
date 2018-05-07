@@ -204,6 +204,19 @@ let check program =
             in let _ = List.fold_left chk_arr_elem [] (List.sort compare ty_arr) in
           let (aty,_) = List.hd ty_arr in
           (Array(aty), SArrayLit(ty_arr))
+      | StructVar(e, m) as s ->
+          let env, stmts, e' = lvalue need_lvalue env stmts e in
+          let typ = fst e' in
+          env, stmts, (match typ with
+              Struct s ->
+                let stype = StringMap.find s struct_decls in
+                (try
+                  fst (List.find (fun b -> snd b = m) stype.members)
+                with Not_found ->
+                  raise (Failure ("struct " ^ s ^ " does not contain member " ^
+                    m ^ " in " ^ string_of_expr d)))
+          , SStructVar(e', m))
+
     in
 
     let check_bool_expr e = 
