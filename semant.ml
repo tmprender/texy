@@ -189,7 +189,7 @@ let check program =
               Struct s ->
                   let stype = StringMap.find s struct_decls in
                   (try
-                    fst (List.find (fun b -> snd b = var) stype.members)
+                    fst (List.find (fun b -> snd b = var) stype.vars)
                   with Not_found ->
                     raise (Failure ("struct "^s^ " does not contain " ^ 
                       var ^ " in " ^ string_of_expr str)))), 
