@@ -39,8 +39,7 @@ let check program =
   (**** Checking Structs ****)
 
   let add_struct map sd = 
-    let built_in_err = "struct " ^ sd.sname ^ " may not be defined"
-    and dup_err = "duplicate struct " ^ sd.sname
+    let dup_err = "duplicate struct " ^ sd.sname
     and make_err er = raise (Failure er)
     and n = sd.sname (* Name of the struct *)
     in match sd with (* No duplicate structs *)
@@ -48,7 +47,7 @@ let check program =
        | _ ->  StringMap.add n sd map 
   in
 
-  let struct_decls = List.fold_left add_struct structs
+  let struct_decls = List.fold_left add_struct StringMap.empty structs
   in
 
   (* Return struct from symbol table *)
