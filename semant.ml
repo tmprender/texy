@@ -36,6 +36,21 @@ let check program =
 
   let globals' = check_binds "global" globals in
 
+  (**** Checking Structs ****)
+
+  let add_struct map sd = 
+    let built_in_err = "struct " ^ sd.sname ^ " may not be defined"
+    and dup_err = "duplicate struct " ^ sd.sname
+    and make_err er = raise (Failure er)
+    and n = sd.sname (* Name of the struct *)
+    in match fd with (* No duplicate structs *)
+       | _ when StringMap.mem n map -> make_err dup_err  
+       | _ ->  StringMap.add n sd map 
+  in
+
+  let struct_decls = List.fold_left add_struct structs
+  in
+
   (**** Checking Functions ****)
 
 
@@ -204,18 +219,6 @@ let check program =
             in let _ = List.fold_left chk_arr_elem [] (List.sort compare ty_arr) in
           let (aty,_) = List.hd ty_arr in
           (Array(aty), SArrayLit(ty_arr))
-      | StructVar(e, m) as s ->
-          let env, stmts, e' = lvalue need_lvalue env stmts e in
-          let typ = fst e' in
-          env, stmts, (match typ with
-              Struct s ->
-                let stype = StringMap.find s struct_decls in
-                (try
-                  fst (List.find (fun b -> snd b = m) stype.members)
-                with Not_found ->
-                  raise (Failure ("struct " ^ s ^ " does not contain member " ^
-                    m ^ " in " ^ string_of_expr d)))
-          , SStructVar(e', m))
 
     in
 
