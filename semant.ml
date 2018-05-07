@@ -186,8 +186,7 @@ let check program =
           let e' = expr e in
           let typ = fst e' in
           (match typ with
-              Struct s ->
-                  let stype = StringMap.find s struct_decls in
+              Struct s -> find_struct s in
                   (try
                     fst (List.find (fun b -> snd b = var) stype.vars)
                   with Not_found ->
