@@ -68,11 +68,6 @@ let check program =
     let symbols = List.fold_left (fun m (ty, name) -> StringMap.add name ty m)
                   StringMap.empty (vars')
     in
-    (* Return a variable from our local symbol table *)
-    let type_of_identifier s =
-      try StringMap.find s symbols
-      with Not_found -> raise (Failure ("undeclared identifier " ^ s))
-    in
     (* body of check_struct *)
     { ssname = struc.sname;
       svars = vars';
