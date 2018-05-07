@@ -194,7 +194,7 @@ let check program =
           and (rt, e') = expr e in
           let err = "illegal assignment " ^ string_of_sexpr lt ^ " = " ^ 
             string_of_typ rt ^ " in " ^ string_of_expr ex
-          in (check_assign lt rt err, SAssign(lt, (rt, e')))
+          in (check_assign lt e' err, SAssign(lt, (rt, e')))
       | Unop(op, e) as ex -> 
           let (t, e') = expr e in
           let ty = match op with
