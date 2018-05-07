@@ -192,7 +192,7 @@ let check program =
                     fst (List.find (fun b -> snd b = var) stype.members)
                   with Not_found ->
                     raise (Failure ("struct "^s^ " does not contain " ^ var ^ string_of_expr str))) in
-          SStructVar(e', var)
+          (SStructVar(e', var))
       | Id s       -> (type_of_identifier s, SId s)
       | Assign(var, e) as ex -> 
           let lt = type_of_identifier var
