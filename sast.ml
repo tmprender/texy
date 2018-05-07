@@ -15,7 +15,7 @@ and sx =
   | SId of string
   | SBinop of sexpr * op * sexpr
   | SUnop of uop * sexpr
-  | SAssign of string * sexpr
+  | SAssign of sexpr * sexpr
   | SCall of string * sexpr list
   | SArrayLit of sexpr list
   | SStructVar of sexpr * string
