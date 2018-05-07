@@ -204,8 +204,8 @@ let check program =
       | Assign(var, e) as ex -> 
           let (lt, var') = expr var
           and (rt, e') = expr e in
-          let err = "illegal assignment " ^ string_of_expr var ^ " = " ^ 
-            string_of_expr e ^ " in " ^ string_of_expr ex
+          let err = "illegal assignment " ^ string_of_typ lt ^ " = " ^ 
+            string_of_typ rt ^ " in " ^ string_of_expr ex
           in (check_assign lt rt err, SAssign((lt, var'), (rt, e')))
       | Unop(op, e) as ex -> 
           let (t, e') = expr e in

@@ -5,7 +5,7 @@ struct myStruct {
 
 int main() {
   struct myStruct one;
-  one.a = 0;
+  one.a = 5;
   print(one.a);
   return 0;
 }

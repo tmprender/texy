@@ -3,6 +3,5 @@
 *.o
 *.native
 *.log
-*.out
 _build/*
 
