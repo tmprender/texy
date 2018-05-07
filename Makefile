@@ -18,7 +18,7 @@ texy.native :
 .PHONY : clean
 clean :
 	ocamlbuild -clean
-	rm -rf testall.log *.diff texy scanner.ml parser.ml parser.mli
+	rm -rf testall.log *.diff texy.native scanner.ml parser.ml parser.mli
 	rm -rf printbig conbin
 	rm -rf *.cmx *.cmi *.cmo *.cmx *.o *.s *.ll *.out *.exe
 
