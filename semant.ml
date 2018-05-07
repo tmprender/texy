@@ -43,7 +43,7 @@ let check program =
     and dup_err = "duplicate struct " ^ sd.sname
     and make_err er = raise (Failure er)
     and n = sd.sname (* Name of the struct *)
-    in match fd with (* No duplicate structs *)
+    in match sd with (* No duplicate structs *)
        | _ when StringMap.mem n map -> make_err dup_err  
        | _ ->  StringMap.add n sd map 
   in
