@@ -183,7 +183,7 @@ let check program =
         | _	-> raise(Failure (s^" is not a valid array ID")) in
            (accty, SArrAcc(s, expr e))
       | StructVar(e, var) as str ->
-          let e' = find_struct e in
+          let e' = expr e in
           let typ = fst e' in
           (match typ with
               Struct s ->
