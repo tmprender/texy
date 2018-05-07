@@ -186,20 +186,20 @@ in
                    with Not_found -> StringMap.find n global_vars
     in
 
-    (* Return the address of the expr *)
+    (* Return the address of the expr; based off of English's implementation from Fall '17 *)
   let addr_of_expr expr builder = match expr with
       SId(id) -> (lookup id)
     | SStructVar(e, var) -> 
        (match e with
-      SId s -> let etype = fst( 
-        let fdecl_locals = List.map (t, n) fdecl.slocals in
+        _, SId s -> let etype = fst( 
+        let fdecl_locals = List.map (fun (t, n) -> (t, n) ) fdecl.slocals in
         try List.find (fun n -> snd(n) = s) fdecl_locals
         with Not_found -> raise (Failure("Unable to find" ^ s )))
         in
         (try match etype with
           A.Struct t->
             let index_number_list = StringMap.find t struct_field_indices in
-            let index_number = StringMap.find field index_number_list in
+            let index_number = StringMap.find var index_number_list in
             let struct_llvalue = lookup s in
             let access_llvalue = L.build_struct_gep struct_llvalue index_number "tmp" builder in
             access_llvalue
