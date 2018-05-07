@@ -114,7 +114,7 @@ access_expr:
   | ID               { Id($1)                 }
   | WLIT             { WordLit($1)            }
   | LBRACKET arry_opt RBRACKET { ArrayLit($2) }
-  | access_expr DOT ID { StructVar($1, $3)    }
+  | ID DOT ID { StructVar($1, $3)    }
   | ID LPAREN args_opt RPAREN { Call($1, $3)  }
   | ID LBRACKET expr RBRACKET {ArrAcc($1,$3)}
 

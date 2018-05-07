@@ -182,6 +182,18 @@ let check program =
         | Array(Bool)   -> Bool
         | _	-> raise(Failure (s^" is not a valid array ID")) in
            (accty, SArrAcc(s, expr e))
+      | StructVar(e, var) as str ->
+          let e' = find_struct e in
+          let typ = fst e' in
+          match typ with
+              Struct s ->
+                  let stype = StringMap.find s struct_decls in
+                  (try
+                    fst (List.find (fun b -> snd b = var) stype.members)
+                  with Not_found ->
+                    raise (Failure ("struct "^s^ " does not contain " ^ var ^ in string_of_expr str)))
+          SStructVar(e', var)
+
       | Id s       -> (type_of_identifier s, SId s)
       | Assign(var, e) as ex -> 
           let lt = type_of_identifier var

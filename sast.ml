@@ -18,7 +18,7 @@ and sx =
   | SAssign of string * sexpr
   | SCall of string * sexpr list
   | SArrayLit of sexpr list
-  | SStructVar of expr * string
+  | SStructVar of sexpr * string
   | SNoexpr
 
 type sstmt =
