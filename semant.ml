@@ -77,6 +77,7 @@ let check program =
     { ssname = struc.sname;
       svars = vars';
     }
+  in
 
   (**** Checking Functions ****)
 
