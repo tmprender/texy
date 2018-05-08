@@ -5,7 +5,7 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
 
 type uop = Neg | Not
 
-type typ = Int | Bool | Word | Char | Float | File | Void | Array of typ | Struct of string
+type typ = Int | Bool | Word | Char | Float | File | Void | Array of typ * int | Struct of string
 
 type bind = typ * string
 
@@ -124,7 +124,7 @@ let rec string_of_typ = function
   | Char -> "char"
   | File -> "file"
   | Void -> "void"
-  | Array(t) -> string_of_typ t ^ "[]"
+  | Array(t,i) -> string_of_typ t ^ "[" ^ string_of_int i ^"]"
   | Struct(s) -> "struct " ^ s
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"

@@ -58,12 +58,13 @@ in
     | A.Word  -> i8_pt
     | A.Char -> i8_t
     | A.File -> i8_pt
-    | A.Array t  -> match t with 
+    | A.Array (t,_)  -> match t with 
           A.Int -> L.pointer_type i32_t
         | A.Bool -> L.pointer_type i1_t
         | A.Float -> L.pointer_type float_t
         | A.Word -> L.pointer_type i8_pt
         | A.Char -> L.pointer_type i8_t
+        | A.Struct s -> L.pointer_type (lookup_struct_type s)
         | t -> raise (Failure ("Array of " ^ A.string_of_typ t ^ " not implemented yet"))
   in
 
@@ -176,8 +177,12 @@ in
 
       (* Allocate space for any locally declared variables and add the
        * resulting registers to our map *)
-      let add_local m (t, n) =
-	let local_var = L.build_alloca (ltype_of_typ t) n builder
+      let add_local m (t, n) = let local_var = match t with
+        A.Array(_, sz) -> if sz = 0 then L.build_alloca (ltype_of_typ t) n builder
+                          else let alty = ltype_of_typ t in
+                          let arrp = L.build_alloca (L.array_type alty sz) n builder in
+                          L.build_gep arrp [|L.const_int i32_t 0; L.const_int i32_t 0|] n builder
+      | _ -> L.build_alloca (ltype_of_typ t) n builder
 	in StringMap.add n local_var m 
       in
 
@@ -210,9 +215,9 @@ in
             let access_llvalue = L.build_struct_gep struct_llvalue index_number "tmp" builder in
             access_llvalue
         | _ -> raise (Failure("not found"))
-       with Not_found -> raise (Failure("not found" ^ s)))
-       | _ -> raise (Failure("lhs not found")))
-   | _ -> raise (Failure("addr not found"))
+      with Not_found -> raise (Failure("not found" ^ s)))
+        | _ -> raise (Failure("lhs not found")))
+    | _ -> raise (Failure("addr not found"))
 
   in
     (* Construct code for an expression; return its value *)

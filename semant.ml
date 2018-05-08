@@ -138,8 +138,16 @@ let check program =
 
     (* Raise an exception if the given rvalue type cannot be assigned to
        the given lvalue type *)
-    let check_assign lvaluet rvaluet err =
-       if lvaluet = rvaluet then lvaluet else raise (Failure err)
+    let check_assign lvaluet rvaluet err = 
+      let ltyp = match lvaluet with
+           Array(olt,_) -> olt
+         | _ -> lvaluet
+         in
+      let rtyp = match rvaluet with
+      Array(ort,_) -> ort
+    | _ -> rvaluet
+    in
+      if ltyp = rtyp then lvaluet else raise (Failure err)
     in   
 
     (* Build local symbol table of variables for this function *)
@@ -180,10 +188,11 @@ let check program =
           if ty != Int then raise(Failure("Array index must be integer"))
           else let aty = type_of_identifier s in 
           let accty = match aty with
-          Array(Int)    -> Int
-        | Array(Float)  -> Float
-        | Array(Word) -> Word
-        | Array(Bool)   -> Bool
+          Array(Int,_)    -> Int
+        | Array(Float,_)  -> Float
+        | Array(Word,_) -> Word
+        | Array(Bool,_)   -> Bool
+        | Array(Struct(i),_) -> Struct(i)
         | _	-> raise(Failure (s^" is not a valid array ID")) in
            (accty, SArrAcc(s, expr e))
       | StructVar(e, var) as str ->
@@ -259,15 +268,15 @@ let check program =
                 | _ -> elem :: chked
             in let _ = List.fold_left chk_arr_elem [] (List.sort compare ty_arr) in
           let (aty,_) = List.hd ty_arr in
-          (Array(aty), SArrayLit(ty_arr))
+          (Array(aty,1), SArrayLit(ty_arr))
       | ArrayAssign (v,i,e) -> let (ty,_) = expr i in
           if ty != Int then raise(Failure("Array index must be integer"))
           else let arrty = type_of_identifier v in 
           let lt = match arrty with
-          Array(Int)    -> Int
-        | Array(Float)  -> Float
-        | Array(Word) -> Word
-        | Array(Bool)   -> Bool
+          Array(Int,_)    -> Int
+        | Array(Float,_)  -> Float
+        | Array(Word,_) -> Word
+        | Array(Bool,_)   -> Bool
         | _	-> raise(Failure (v^" is not a valid array ID")) in
           let (rt,_) = expr e in
           if lt != rt then raise(Failure("Assigning type mismatches Array type"))

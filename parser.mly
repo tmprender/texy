@@ -62,9 +62,9 @@ formals_opt:
 
 formal_list:
     typ ID                   { [($1,$2)]     }
-  | typ ID LBRACKET RBRACKET { [(Array($1), $2)] }
+  | typ ID LBRACKET RBRACKET { [(Array($1,0), $2)] }
   | formal_list COMMA typ ID { ($3,$4) :: $1 }
-  | formal_list COMMA typ ID LBRACKET RBRACKET {(Array($3), $4) :: $1}
+  | formal_list COMMA typ ID LBRACKET RBRACKET {(Array($3,0), $4) :: $1}
 
 typ:
     INT    { Int  }
@@ -81,8 +81,9 @@ vdecl_list:
   | vdecl_list vdecl { $2 :: $1 }
 
 vdecl:
-   typ ID SEMI { ($1, $2) }
-  | typ ID LBRACKET RBRACKET SEMI { (Array($1), $2) }
+    typ ID SEMI { ($1, $2) }
+  | typ ID LBRACKET RBRACKET SEMI { (Array($1,0), $2) }
+  | typ ID LBRACKET LITERAL RBRACKET SEMI { (Array($1,$4), $2) }
 
 arry_opt:
     /* empty */ { [] }
@@ -120,7 +121,7 @@ access_expr:
   | LBRACKET arry_opt RBRACKET { ArrayLit($2) }
   | access_expr DOT ID { StructVar($1, $3)    }
   | ID LPAREN args_opt RPAREN { Call($1, $3)  }
-  | ID LBRACKET expr RBRACKET {ArrAcc($1,$3)}
+  | ID LBRACKET expr RBRACKET { ArrAcc($1,$3) }
 
 binary_expr:
   | expr PLUS   expr { Binop($1, Add,   $3)   }
