@@ -1,0 +1,82 @@
+int merge(Word a[], int l, int m, int r){
+    int n1;
+    int n2;
+    Word left [50];
+    Word right [50];
+
+    int i;
+    int j;
+    int k;
+
+    n1 = m-l +1;
+    n2 = r -m;
+    /* copy data to temporary arrays */
+    for(i=0; i<n1; i = i+1){
+        left@[i] = a[1 + i];        
+    }
+    for(j=0; j<n2; j = j+1){
+        right@[j] = a[m + 1 + j];        
+    }
+    /* merge arrays */
+    i = 0;
+    j = 0;
+    k = 1;
+    while ( i < n1 && j< n2){
+        if (strcmp(left[i],right[j]) > 0){
+            a@[k] = left[i];
+            i = i+1;
+        }
+        else{
+            a@[k] = right[j];
+            j = j+1;
+        }
+        k = k + 1;
+    }
+    /* copy the remainders of left */
+    while (i <n1){
+        a@[k] = left[i];
+        i = i +1;
+        k = k+1;
+    }
+    /* copy the remainders of right */
+    while(j <n2){
+        a@[k] = right[j];
+        j = j+1;
+        k = k+1;
+    }
+    return 0;
+}
+
+/* merge sort driver function */
+int merge_sort(Word a[], int l, int r){
+    int m;
+    if(l <r){
+        m = l+r/2;
+        merge_sort(a, l, m);
+        merge_sort(a, m+1, r);
+        merge(a, l, m, r);
+    }
+    return 0;
+}
+
+int main() {
+    Word names[100];
+    int i;
+    names@[0] = "Stephen";
+    names@[1] = "Mike";
+    names@[2] = "Thomas";
+    names@[3] = "Dennis";
+
+    printword("Before sorted:");
+    for (i=0; i<4; i=i+1){
+        printword(names[i]);
+    }
+    printword(" ");
+    merge_sort(names,0,3);
+    
+    printword("After merge sort:");
+    for (i=0; i<4; i=i+1){
+        printword(names[i]);
+    }
+    return 0;
+}

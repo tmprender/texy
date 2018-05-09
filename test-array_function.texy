@@ -1,6 +1,6 @@
 void printelem(Word p[]){
   printword(p[2]);
-  p@[1] = "wow!";
+  p@[1] = p[2];
 }
 
 int main()

@@ -107,8 +107,8 @@ let check program =
       formals = [(Word,"x"); (Int,"y")] });
       ("bitflip", {typ = Word; fname = "shiftdown"; locals = []; body = [];
       formals = [(Word,"x"); (Int,"y")] });
-      ("strcmp", {typ = Word; fname = "strcmp"; locals = []; body = [];
-      formals = [(Word,"x")] });
+      ("strcmp", {typ = Int; fname = "strcmp"; locals = []; body = [];
+      formals = [(Word,"x"); (Word,"y")] });
       ("strlen", {typ = Word; fname = "strlen"; locals = []; body = [];
       formals = [(Word,"x")] });
       ("strncpy", {typ = Word; fname = "strncpy"; locals = []; body = [];

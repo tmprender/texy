@@ -150,7 +150,7 @@ in
   let concat_t = L.function_type i8_pt [| i8_pt ; i8_pt |] in 
   let concat_func = L.declare_function "concat" concat_t the_module in
 
-  let strcmp_t = L.function_type i8_pt [| i8_pt |] in 
+  let strcmp_t = L.function_type i32_t [| i8_pt ; i8_pt |] in 
   let strcmp_func = L.declare_function "strcmp" strcmp_t the_module in
 
   let strlen_t = L.function_type i8_pt [| i8_pt |] in 
