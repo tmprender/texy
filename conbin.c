@@ -3,6 +3,7 @@
 #include <string.h>
 #include <limits.h>
 #include <errno.h>
+#include <math.h>
 char *conbin(char *s)
 {
   if (s == NULL) {
