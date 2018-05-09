@@ -3,7 +3,15 @@
 #include <string.h>
 #include <limits.h>
 #include <errno.h>
-#include <math.h>
+
+int powr(int a, int b){
+  int c = 1;
+  for (int i=0; i <a; i++){
+    c=c*b;
+  }
+  return c;
+}
+
 char *conbin(char *s)
 {
   if (s == NULL) {
@@ -112,7 +120,7 @@ char *shiftdown(char *s, int t){
         {
            remainder = c % 10;
            c = c / 10;
-           decimalnum = decimalnum + remainder * pow(2, temp);
+           decimalnum = decimalnum + remainder * powr(2, temp);
            temp++;
     	}
 		
@@ -171,7 +179,7 @@ char *binshift(char *s, int t)
         {
            remainder = c % 10;
            c = c / 10;
-           decimalnum = decimalnum + remainder * pow(2, temp);
+           decimalnum = decimalnum + remainder * powr(2, temp);
            temp++;
     	}
 		
