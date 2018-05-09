@@ -107,6 +107,9 @@ let translate (globals, functions) =
   let concat_t = L.function_type i8_pt [| i8_pt ; i8_pt |] in 
   let concat_func = L.declare_function "concat" concat_t the_module in
 
+  let strcmp_t = L.function_type i32_t [| i8_pt ; i8_pt |] in 
+  let strcmp_func = L.declare_function "strcmp" strcmp_t the_module in
+
   (* Define each function (arguments and return type) so we can 
    * define it's body and call it later *)
   let function_decls : (L.llvalue * sfunc_decl) StringMap.t =
@@ -226,6 +229,8 @@ let translate (globals, functions) =
     L.build_call bitflip_func (Array.of_list x) "bitflip" builder
       | SCall ("concat", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
     L.build_call concat_func (Array.of_list x) "concat" builder
+      | SCall ("strcmp", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
+    L.build_call strcmp_func (Array.of_list x) "strcmp" builder
       | SCall ("printword", [e]) -> 
 	  L.build_call printf_func [| str_format_str ; (expr builder e) |]
       "printf" builder

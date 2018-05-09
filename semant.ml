@@ -67,7 +67,9 @@ let check (globals, functions) =
       ("bincon", {typ = Word; fname = "bincon"; locals = []; body = [];
       formals = [(Word,"x")] });
       ("bitflip", {typ = Word; fname = "bitflip"; locals = []; body = [];
-      formals = [(Word,"x")] })
+      formals = [(Word,"x")] });
+      ("strcmp", {typ = Int; fname = "strcmp"; locals = []; body = [];
+      formals = [(Word,"x") ; (Word,"y")] })
     ]
 
   in

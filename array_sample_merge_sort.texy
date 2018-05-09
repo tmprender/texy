@@ -1,0 +1,36 @@
+void sort(Word a[], int n){
+    Word key;
+    int i;
+    int j;
+    int cmp;
+    for (i=1;i<n;i=i+1){
+        key = a[i];
+        j=i-1;
+        cmp = strcmp(a[j],key);
+        while(j>=0 && cmp>0){
+            a@[j+1] = a[j];
+            j=j-1;
+            if (j>=0) cmp = strcmp(a[j],key);
+        }
+        a@[j+1] = key;
+    }
+}
+
+int main() {
+    Word names[];
+    int i;
+
+    names = ["Stephen", "Mike", "Thomas", "Dennis"];
+
+    printword("Before sorted:");
+    for (i=0; i<4; i=i+1){
+        printword(names[i]);
+    }
+    sort(names,4);
+    printword(" ");
+    printword("After sorted:");
+    for (i=0; i<4; i=i+1){
+        printword(names[i]);
+    }
+
+}
