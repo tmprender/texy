@@ -94,7 +94,7 @@ Check() {
     generatedfiles="$generatedfiles ${basename}.ll ${basename}.s ${basename}.exe ${basename}.out" &&
     Run "$TEXY" "$1" ">" "${basename}.ll" &&
     Run "$LLC" "${basename}.ll" ">" "${basename}.s" &&
-    Run "$CC" "-o" "${basename}.exe" "${basename}.s" "printbig.o" &&
+    Run "$CC" "-o" "${basename}.exe" "${basename}.s" "printbig.o" "conbin.o" &&
     Run "./${basename}.exe" > "${basename}.out" &&
     Compare ${basename}.out ${reffile}.out ${basename}.diff
 
@@ -169,6 +169,13 @@ if [ ! -f printbig.o ]
 then
     echo "Could not find printbig.o"
     echo "Try \"make printbig.o\""
+    exit 1
+fi
+
+if [ ! -f conbin.o ]
+then
+    echo "Could not find conbin.o"
+    echo "Try \"make conbin.o\""
     exit 1
 fi
 

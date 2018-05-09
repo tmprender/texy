@@ -1,39 +1,75 @@
-
-void sort(Word a[], int n){
-    Word key;
-    Word tmp;
+void print_wordarray(Word a[], int n){
     int i;
-    int j;
-    int cmp;
-    printword("in sort");
-    for (i=1;i<n;i=i+1){
-        key = a[i];
-        j=i-1;
-        tmp = a[j];
-        cmp = strcmp(tmp,key);
-        while(j>=0 && cmp>0){
-            a@[j] = a[j];
-            j=j-1;
-            tmp = a[j];
-            cmp = strcmp(tmp,key);
-        }
-        a@[j+1] = key;
+    printword("--------------------");
+    for (i=0; i<n; i=i+1){
+        printword(a[i]);
     }
 }
 
-int main() {
-    Word names[100];
+int merge(Word a[], int l, int m, int r){
+    int n1;
+    int n2;
+    Word buf[];
+
     int i;
 
-    names@[0] = "Stephen";
-    names@[1] = "Mike";
-    names@[2] = "Thomas";
-    names@[3] = "Dennis";
+    buf = [" "," "," "," "," "," "," "," "," "," "," "," "," "];
+
+    n1=l;
+    n2 = m+1;
+    i=l;
+
+    for (i=l;n1<=m&&n2<=r;i=i+1) {
+        if(strcmp(a[n1], a[n2])<=0) {
+            buf@[i] = a[n1];
+            n1= n1+1;
+        }
+        else {
+            buf@[i] = a[n2];
+            n2= n2+1;
+        }
+    }
+
+    while(n1<=m){
+        buf@[i]= a[n1];
+        i=i+1;
+        n1= n1+1;
+    }
+    
+    while(n2<=r){
+        buf@[i]= a[n2];
+        i=i+1;
+        n2= n2+1;
+    }
+    for (i=l;i<=r;i=i+1){
+        a@[i]=buf[i];
+    }
+    return 0;
+}
+
+int merge_sort(Word a[], int l, int r){
+    int m;
+    if(l <r){
+        m = (l+r)/2;
+        merge_sort(a, l, m);
+        merge_sort(a, m+1, r);        
+        merge(a, l, m, r);
+    }
+    return 0;
+}
+
+int main() {
+    Word names[];
+    int i;
+    
+    names = ["Stephen","Thomas","Dennis","Dop","Able","Bob","Celtic","Ethen","Mike"];
 
     printword("Before sorted:");
-    for (i=0; i<4; i=i+1){
-        printword(names[i]);
-    }
-    sort(names,4);
-
+    print_wordarray(names, 9);
+    printword(" ");
+    merge_sort(names,0,8);
+    
+    printword("After merge sort:");
+    print_wordarray(names, 9);
+    return 0;
 }
