@@ -141,8 +141,23 @@ in
   let bitflip_t = L.function_type i8_pt [| i8_pt |] in
   let bitflip_func = L.declare_function "bitflip" bitflip_t the_module in
 
+  let binshift_t = L.function_type i8_pt [| i8_pt ; i32_t |] in
+  let binshift_func = L.declare_function "binshift" binshift_t the_module in
+
+  let shiftdown_t = L.function_type i8_pt [| i8_pt ; i32_t |] in
+  let shiftdown_func = L.declare_function "shiftdown" shiftdown_t the_module in
+
   let concat_t = L.function_type i8_pt [| i8_pt ; i8_pt |] in 
   let concat_func = L.declare_function "concat" concat_t the_module in
+
+  let strcmp_t = L.function_type i8_pt [| i8_pt |] in 
+  let strcmp_func = L.declare_function "strcmp" strcmp_t the_module in
+
+  let strlen_t = L.function_type i8_pt [| i8_pt |] in 
+  let strlen_func = L.declare_function "strlen" strlen_t the_module in
+
+  let strncpy_t = L.function_type i8_pt [| i8_pt ; i8_pt ; i32_t |] in 
+  let strncpy_func = L.declare_function "strncpy" strncpy_t the_module in
 
   (* Define each function (arguments and return type) so we can 
    * define it's body and call it later *)
@@ -233,6 +248,8 @@ in
       | SConbin e -> L.build_call conbin_func [| (expr builder e) |] "conbin" builder
       | SBincon (e) -> L.build_call bincon_func [| (expr builder e) |] "bincon" builder
       | SBitflip e -> L.build_call bitflip_func [| (expr builder e) |] "bitflip" builder
+      | SShiftup (e1, e2) -> L.build_call binshift_func [| (expr builder e1) ; (expr builder e2) |] "binshift" builder
+      | SShiftdown (e1, e2) -> L.build_call shiftdown_func [| (expr builder e1) ; (expr builder e2) |] "shiftdown" builder
       | SConcat (e1, e2) -> L.build_call concat_func [| (expr builder e1) ; (expr builder e2) |] "concat" builder
       | SId s -> L.build_load (lookup s) s builder
       | SAssign (e1, e2) -> let lv = snd(e1) in
@@ -308,6 +325,12 @@ in
     L.build_call bincon_func (Array.of_list x) "bincon" builder
       | SCall ("bitflip", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
     L.build_call bitflip_func (Array.of_list x) "bitflip" builder
+      | SCall ("strcmp", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
+    L.build_call strcmp_func (Array.of_list x) "strcmp" builder
+      | SCall ("strlen", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
+    L.build_call strlen_func (Array.of_list x) "strlen" builder
+      | SCall ("strncpy", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
+    L.build_call strncpy_func (Array.of_list x) "strncpy" builder
       | SCall ("concat", e) -> let x = List.rev (List.map (expr builder) (List.rev e)) in
     L.build_call concat_func (Array.of_list x) "concat" builder
       | SCall ("printword", [e]) -> 

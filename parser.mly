@@ -5,7 +5,7 @@ open Ast
 %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET 
-%token COMMA PLUS MINUS TIMES DIVIDE ASSIGN CONBIN BINCON BITFLIP CONCAT DOT AT
+%token COMMA PLUS MINUS TIMES DIVIDE ASSIGN CONBIN BINCON BITFLIP SHIFTUP SHIFTDOWN CONCAT DOT AT
 %token NOT EQ NEQ LT LEQ GT GEQ AND OR
 %token RETURN IF ELSE FOR WHILE INT BOOL FLOAT CHAR WORD FILE ARRAY VOID STRUCT
 %token <int> LITERAL
@@ -21,8 +21,9 @@ open Ast
 %nonassoc NOELSE
 %nonassoc ELSE
 %right ASSIGN
+%left SHIFTUP SHIFTDOWN
 %right CONBIN BINCON BITFLIP
-%left CONCAT DOT
+%left CONCAT DOT 
 %left OR
 %left AND
 %left EQ NEQ
@@ -138,6 +139,8 @@ binary_expr:
   | expr AND    expr { Binop($1, And,   $3)   }
   | expr OR     expr { Binop($1, Or,    $3)   }
   | expr CONCAT expr { Concat($1, $3)         }
+  | expr SHIFTUP expr { Shiftup($1, $3)       }
+  | expr SHIFTDOWN expr { Shiftdown($1, $3)   }
 
 unary_expr:
   | MINUS expr %prec NEG { Unop(Neg, $2)      }

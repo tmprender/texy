@@ -102,7 +102,17 @@ let check program =
       ("bincon", {typ = Word; fname = "bincon"; locals = []; body = [];
       formals = [(Word,"x")] });
       ("bitflip", {typ = Word; fname = "bitflip"; locals = []; body = [];
-      formals = [(Word,"x")] })
+      formals = [(Word,"x")] });
+      ("binshift", {typ = Word; fname = "binshift"; locals = []; body = [];
+      formals = [(Word,"x"); (Int,"y")] });
+      ("bitflip", {typ = Word; fname = "shiftdown"; locals = []; body = [];
+      formals = [(Word,"x"); (Int,"y")] });
+      ("strcmp", {typ = Word; fname = "strcmp"; locals = []; body = [];
+      formals = [(Word,"x")] });
+      ("strlen", {typ = Word; fname = "strlen"; locals = []; body = [];
+      formals = [(Word,"x")] });
+      ("strncpy", {typ = Word; fname = "strncpy"; locals = []; body = [];
+      formals = [(Word,"x"); (Word,"y"); (Int,"z")] })
     ]
 
   in
@@ -176,14 +186,24 @@ let check program =
           if ty2 != Word then raise(Failure("Can only concat words"))
           else (Word, SConcat((expr e1), (expr e2)))
       | Conbin e -> let (ty, _) = expr e in
-          if ty != Word then raise(Failure("Conbin can only be applied to words"))
+          if ty != Word then raise(Failure("# can only be applied to words"))
           else (Word, SConbin (expr e))
       | Bincon (e) -> let (ty, _) = expr e in
-          if ty != Word then raise(Failure("# can only be applied to words"))
+          if ty != Word then raise(Failure("% can only be applied to words"))
           else (Word, SBincon (expr e)) 
       | Bitflip e -> let (ty, _) = expr e in
-          if ty != Word then raise(Failure("#~ can only be applied to words"))
+          if ty != Word then raise(Failure("~ can only be applied to words"))
           else (Word, SBitflip (expr e)) 
+      | Shiftup (e1,e2) -> let (ty1, _) = expr e1 in
+          if ty1 != Word then raise(Failure("Use #+ as words #+ int"))
+          else let (ty2, _) = expr e2 in
+          if ty2 != Int then raise(Failure("Use #+ as words #+ int"))
+          else (Word, SShiftup (expr e1, expr e2))
+      | Shiftdown (e1,e2) -> let (ty1, _) = expr e1 in
+          if ty1 != Word then raise(Failure("Use #- as words #- int"))
+          else let (ty2, _) = expr e2 in
+          if ty2 != Int then raise(Failure("Use #- as words #- int"))
+          else (Word, SShiftdown (expr e1, expr e2))
       | ArrAcc (s, e) -> let (ty,_) = expr e in
           if ty != Int then raise(Failure("Array index must be integer"))
           else let aty = type_of_identifier s in 

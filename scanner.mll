@@ -35,6 +35,8 @@ rule token = parse
 | "#"      { CONBIN }
 | "%"     { BINCON }
 | "~"     { BITFLIP }
+| "#+"     { SHIFTUP }
+| "#-"     { SHIFTDOWN }
 | "^"      { CONCAT }
 | "@"      { AT }
 | "if"     { IF }
