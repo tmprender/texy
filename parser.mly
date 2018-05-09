@@ -22,7 +22,7 @@ open Ast
 %nonassoc ELSE
 %right ASSIGN
 %right CONBIN BINCON BITFLIP
-%left CONCAT
+%left CONCAT DOT
 %left OR
 %left AND
 %left EQ NEQ
@@ -122,6 +122,7 @@ access_expr:
   | access_expr DOT ID { StructVar($1, $3)    }
   | ID LPAREN args_opt RPAREN { Call($1, $3)  }
   | ID LBRACKET expr RBRACKET { ArrAcc($1,$3) }
+  | ID AT LBRACKET expr RBRACKET {ArrayAssign($1,$4)}
 
 binary_expr:
   | expr PLUS   expr { Binop($1, Add,   $3)   }
@@ -146,8 +147,7 @@ unary_expr:
   | BITFLIP expr     { Bitflip($2)            }
 
 assign_expr:
-    expr ASSIGN expr   { Assign($1, $3)         }
-  | ID AT LBRACKET expr RBRACKET ASSIGN expr {ArrayAssign($1,$4,$7)}
+    expr ASSIGN expr   { Assign($1, $3)        }
 
 expr:
     access_expr        { $1 }

@@ -24,7 +24,7 @@ type expr =
   | Binop of expr * op * expr
   | Unop of uop * expr
   | Assign of expr * expr
-  | ArrayAssign of string * expr * expr
+  | ArrayAssign of string * expr
   | Call of string * expr list
   | ArrayLit of expr list
   | StructVar of expr * string
@@ -95,7 +95,7 @@ let rec string_of_expr = function
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
   | Assign(v, e) -> string_of_expr v ^ " = " ^ string_of_expr e
-  | ArrayAssign(v,i,e) -> v ^ string_of_expr i ^ "=" ^ string_of_expr e
+  | ArrayAssign(v,i) -> v ^ "[" ^ string_of_expr i ^ "]"
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | ArrAcc(n, e) ->

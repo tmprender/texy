@@ -269,7 +269,7 @@ let check program =
             in let _ = List.fold_left chk_arr_elem [] (List.sort compare ty_arr) in
           let (aty,_) = List.hd ty_arr in
           (Array(aty,1), SArrayLit(ty_arr))
-      | ArrayAssign (v,i,e) -> let (ty,_) = expr i in
+      | ArrayAssign (v,i) -> let (ty,_) = expr i in
           if ty != Int then raise(Failure("Array index must be integer"))
           else let arrty = type_of_identifier v in 
           let lt = match arrty with
@@ -277,10 +277,9 @@ let check program =
         | Array(Float,_)  -> Float
         | Array(Word,_) -> Word
         | Array(Bool,_)   -> Bool
+        | Array(Struct(n),_) -> Struct n
         | _	-> raise(Failure (v^" is not a valid array ID")) in
-          let (rt,_) = expr e in
-          if lt != rt then raise(Failure("Assigning type mismatches Array type"))
-          else (lt, SArrayAssign(v, expr i, expr e))
+          (lt, SArrayAssign(v, expr i))
 
     in
 

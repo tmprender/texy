@@ -181,7 +181,8 @@ in
         A.Array(_, sz) -> if sz = 0 then L.build_alloca (ltype_of_typ t) n builder
                           else let alty = ltype_of_typ t in
                           let arrp = L.build_alloca (L.array_type alty sz) n builder in
-                          L.build_gep arrp [|L.const_int i32_t 0; L.const_int i32_t 0|] n builder
+                          let arrp' = L.build_gep arrp [|L.const_int i32_t 0; L.const_int i32_t 0|] n builder in
+                          arrp'
       | _ -> L.build_alloca (ltype_of_typ t) n builder
 	in StringMap.add n local_var m 
       in
@@ -200,6 +201,7 @@ in
     (* Return the address of the expr; based off of English's implementation from Fall '17 *)
   let addr_of_expr sx builder = match sx with
       SId(id) -> (lookup id)
+    | SArrayAssign(s,_) -> (lookup s)
     | SStructVar(e, var) -> 
        (match snd(e) with
         SId s -> let etype = fst( 
@@ -233,8 +235,14 @@ in
       | SBitflip e -> L.build_call bitflip_func [| (expr builder e) |] "bitflip" builder
       | SConcat (e1, e2) -> L.build_call concat_func [| (expr builder e1) ; (expr builder e2) |] "concat" builder
       | SId s -> L.build_load (lookup s) s builder
-      | SAssign (e1, e2) -> let l_val = (addr_of_expr (snd(e1)) builder) in
-      let e2' = expr builder e2 in
+      | SAssign (e1, e2) -> let lv = snd(e1) in
+          let l_val = match lv with
+              SArrayAssign(v,i) -> 
+              let i' = expr builder i in
+              let v' = L.build_load (lookup v) "" builder in
+              L.build_gep v' [| i' |] "" builder  
+        | _ -> addr_of_expr (snd(e1)) builder in
+          let e2' = expr builder e2 in
        ignore (L.build_store e2' l_val builder); e2'
       | SStructVar (e, var) -> let llvalue = (addr_of_expr (snd(e)) builder) in 
           let built_e = expr builder e in
@@ -328,11 +336,10 @@ in
          let arr = L.build_load (lookup s) "" builder in
          let s' = L.build_gep arr [| idx |] "" builder in
          let s' = L.build_load s' "" builder in s'
-      | SArrayAssign(v,i,e) -> let e' = expr builder e in
+      | SArrayAssign(v,i) -> 
               let i' = expr builder i in
               let v' = L.build_load (lookup v) "" builder in
-              let ptr = L.build_gep v' [| i' |] "" builder in
-              let r = L.build_store e' ptr builder in r
+              let ptr = L.build_gep v' [| i' |] "" builder in ptr
       | SArrayLit sel ->
           let al = List.map (expr builder) sel in
           let ty = L.type_of (List.hd al) in

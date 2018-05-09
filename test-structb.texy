@@ -1,0 +1,15 @@
+struct myStruct {
+  int a;
+  int b;
+};
+
+int main() {
+  struct myStruct one;
+  struct myStruct two[3];
+  struct myStruct tmp;
+  one.a = 5;
+  two@[2] = one;
+  tmp = two[2];
+  print(tmp.a);
+  return 0;
+}
